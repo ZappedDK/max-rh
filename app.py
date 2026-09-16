@@ -422,6 +422,8 @@ def admin_usuarios():
         flash('Acesso restrito a administradores.', 'danger')
         return redirect(url_for('admin_dashboard'))
         
+    aba_ativa = request.args.get('aba', 'lista')
+
     if request.method == 'POST':
         action = request.form.get('action')
         
@@ -434,14 +436,17 @@ def admin_usuarios():
             
             if User.query.filter_by(username=username).first():
                 flash('Nome de usuário já cadastrado.', 'warning')
+                aba_ativa = 'novo'
             elif User.query.filter_by(email=email).first():
                 flash('E-mail já cadastrado para outro usuário.', 'warning')
+                aba_ativa = 'novo'
             else:
                 novo_u = User(username=username, nome=nome, email=email, role=role, ativo=True)
                 novo_u.set_password(password)
                 db.session.add(novo_u)
                 db.session.commit()
                 flash(f'Usuário {username} criado com sucesso!', 'success')
+                return redirect(url_for('admin_usuarios'))
                 
         elif action == 'toggle_status':
             uid = request.form.get('user_id')
@@ -468,9 +473,11 @@ def admin_usuarios():
     query = User.query
     if q:
         query = query.filter(
-            (User.nome.ilike(f'%{q}%')) | 
-            (User.username.ilike(f'%{q}%')) | 
-            (User.email.ilike(f'%{q}%'))
+            db.or_(
+                User.nome.ilike(f'%{q}%'),
+                User.username.ilike(f'%{q}%'),
+                User.email.ilike(f'%{q}%')
+            )
         )
     if role_filtro:
         query = query.filter(User.role == role_filtro)
@@ -486,7 +493,8 @@ def admin_usuarios():
         usuarios=usuarios, 
         busca_atual=q, 
         role_atual=role_filtro, 
-        status_atual=status_filtro
+        status_atual=status_filtro,
+        aba_ativa=aba_ativa
     )
 
 @app.route('/admin/configuracoes', methods=['GET', 'POST'])

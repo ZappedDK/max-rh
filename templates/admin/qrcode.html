@@ -10,77 +10,97 @@
   </div>
 </div>
 
-<!-- Seletor em Abas/Caixas: Código de Acesso Rápido vs Cartaz de Divulgação -->
-<div class="qr-tab-nav no-print">
-  <div id="tabBtnAcessoRapido" class="qr-tab-card active" onclick="alternarAbaQR('acesso-rapido')">
-    <div class="qr-tab-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 22px; height: 22px;">
-        <rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect>
-        <path d="M12 18h.01"></path>
-      </svg>
-    </div>
-    <div class="qr-tab-info">
-      <h4>Código de Acesso Rápido</h4>
-      <p>Link direto, visualização do QR Code e download do arquivo para balcão</p>
-    </div>
-  </div>
-
-  <div id="tabBtnCartazA4" class="qr-tab-card" onclick="alternarAbaQR('cartaz-a4')">
-    <div class="qr-tab-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 22px; height: 22px;">
-        <polyline points="6 9 6 2 18 2 18 9"></polyline>
-        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-        <rect width="12" height="8" x="6" y="14"></rect>
-      </svg>
-    </div>
-    <div class="qr-tab-info">
-      <h4>Cartaz de Divulgação na Loja (A4)</h4>
-      <p>Pôster profissional diagramado para mural, recepção e atendimento</p>
-    </div>
-  </div>
+<!-- Seletor Minimalista em Abas: Código de Acesso Rápido vs Cartaz de Divulgação -->
+<div class="tabs-minimal-nav no-print">
+  <button type="button" id="tabBtnAcessoRapido" class="tab-minimal-btn active" onclick="alternarAbaQR('acesso-rapido')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+      <rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect>
+      <path d="M12 18h.01"></path>
+    </svg>
+    <span>Código de Acesso Rápido</span>
+  </button>
+  <button type="button" id="tabBtnCartazA4" class="tab-minimal-btn" onclick="alternarAbaQR('cartaz-a4')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+      <polyline points="6 9 6 2 18 2 18 9"></polyline>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+      <rect width="12" height="8" x="6" y="14"></rect>
+    </svg>
+    <span>Cartaz de Divulgação (A4)</span>
+  </button>
 </div>
 
 <!-- ==========================================
      CONTEÚDO 1: CÓDIGO DE ACESSO RÁPIDO
      ========================================== -->
-<div id="secaoAcessoRapido" class="no-print" style="max-width: 680px; margin: 0 auto;">
-  <div class="card-box" style="text-align: center; padding: 32px 24px;">
+<div id="secaoAcessoRapido" class="no-print">
+  <div class="qr-workspace-grid">
     
-    <div style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: var(--primary-light); color: var(--primary); margin-bottom: 12px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 26px; height: 26px;">
-        <rect x="3" y="3" width="7" height="7"></rect>
-        <rect x="14" y="3" width="7" height="7"></rect>
-        <rect x="14" y="14" width="7" height="7"></rect>
-        <rect x="3" y="14" width="7" height="7"></rect>
-        <line x1="7" y1="7" x2="7" y2="7.01"></line>
-        <line x1="17" y1="7" x2="17" y2="7.01"></line>
-        <line x1="7" y1="17" x2="7" y2="17.01"></line>
-        <line x1="17" y1="17" x2="17" y2="17.01"></line>
-      </svg>
-    </div>
+    <!-- Painel Lateral: Gestão & Compartilhamento -->
+    <div class="qr-side-card">
+      <div class="qr-side-header">
+        <div class="card-badge-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 22px; height: 22px;">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+        </div>
+        <div>
+          <h3>Divulgação Digital</h3>
+          <p>Compartilhe o link direto ou integre nas comunicações digitais do RH</p>
+        </div>
+      </div>
 
-    <h2 style="font-size: 1.35rem; color: var(--admin-text-primary); font-weight: 700; margin-bottom: 6px;">Código de Acesso Rápido para Balcão</h2>
-    <p style="font-size: 0.88rem; color: var(--admin-text-muted); margin-bottom: 24px;">Exiba este código nos totens, recepções ou envie o link diretamente para candidatos via WhatsApp</p>
+      <!-- Caixa de Link Copiável -->
+      <div>
+        <label class="filter-label" style="margin-bottom: 6px;">Link Direto da Ficha de Candidatura</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" readonly value="{{ url_candidatura }}" class="filter-input" style="padding-left: 14px; font-size: 0.85rem; font-family: monospace; background: var(--admin-bg);">
+          <button type="button" onclick="copiarLinkCandidatura()" class="btn btn-outline" style="white-space: nowrap; padding: 0 16px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+            </svg>
+            <span id="btnCopyText">Copiar</span>
+          </button>
+        </div>
+      </div>
 
-    <div style="display: inline-block; padding: 18px; background: #ffffff; border: 2px solid var(--admin-border); border-radius: 16px; margin-bottom: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
-      <img src="{{ qrcode_svg }}" alt="QR Code Vagas" style="width: 240px; height: 240px; display: block;">
-    </div>
+      <!-- Dicas de Utilização -->
+      <div class="qr-spec-list">
+        <div class="qr-spec-item">
+          <span class="qr-spec-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            WhatsApp & Mensagens
+          </span>
+          <span class="qr-spec-val" style="font-size: 0.78rem; color: #10b981;">Ideal para Triagem</span>
+        </div>
+        <div class="qr-spec-item">
+          <span class="qr-spec-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+              <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+            Redes Sociais
+          </span>
+          <span class="qr-spec-val" style="font-size: 0.78rem;">Bio do Instagram</span>
+        </div>
+        <div class="qr-spec-item">
+          <span class="qr-spec-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+              <path d="M9 3v18"></path>
+            </svg>
+            Totem & Recepção
+          </span>
+          <span class="qr-spec-val" style="font-size: 0.78rem;">Display Acrílico</span>
+        </div>
+      </div>
 
-    <div style="background: var(--admin-bg); border: 1.5px solid var(--admin-border); border-radius: 10px; padding: 14px 16px; margin-bottom: 24px; text-align: left;">
-      <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--admin-text-muted); display: block; margin-bottom: 4px;">Link Direto da Ficha Digital:</span>
-      <code style="font-size: 0.92rem; color: var(--primary); word-break: break-all; font-weight: 600;">{{ url_candidatura }}</code>
-    </div>
-
-    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-      <button type="button" onclick="copiarLinkCandidatura()" class="btn btn-outline" style="padding: 10px 22px; display: inline-flex; align-items: center; gap: 8px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 17px; height: 17px;">
-          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-        </svg>
-        <span id="btnCopyText">Copiar Link</span>
-      </button>
-
-      <a href="{{ qrcode_svg }}" download="qrcode_vagas_max.svg" class="btn btn-primary" style="padding: 10px 22px; display: inline-flex; align-items: center; gap: 8px;">
+      <!-- Botão de Download SVG -->
+      <a href="{{ qrcode_svg }}" download="qrcode_vagas_max.svg" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 17px; height: 17px;">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="7 10 12 15 17 10"></polyline>
@@ -88,6 +108,35 @@
         </svg>
         Baixar Imagem QR Code (SVG)
       </a>
+
+    </div>
+
+    <!-- Área Principal: Visualização do QR Code -->
+    <div class="qr-preview-stage" style="text-align: center; padding: 40px 24px;">
+      <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--primary-light); color: var(--primary); margin-bottom: 14px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+          <line x1="7" y1="7" x2="7" y2="7.01"></line>
+          <line x1="17" y1="7" x2="17" y2="7.01"></line>
+          <line x1="7" y1="17" x2="7" y2="17.01"></line>
+          <line x1="17" y1="17" x2="17" y2="17.01"></line>
+        </svg>
+      </div>
+
+      <h2 style="font-size: 1.3rem; color: var(--admin-text-primary); font-weight: 700; margin: 0 0 6px 0;">Código de Acesso Rápido para Balcão</h2>
+      <p style="font-size: 0.88rem; color: var(--admin-text-muted); margin: 0 0 24px 0;">Aponte a câmera do celular para testar o direcionamento imediato à ficha digital</p>
+
+      <div style="display: inline-block; padding: 18px; background: #ffffff; border: 2px solid var(--admin-border); border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+        <img src="{{ qrcode_svg }}" alt="QR Code Vagas" style="width: 240px; height: 240px; display: block;">
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--admin-text-muted); font-size: 0.82rem;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+        Código vetorial dinâmico de alta resolução
+      </div>
     </div>
 
   </div>
@@ -97,67 +146,148 @@
      CONTEÚDO 2: CARTAZ DE DIVULGAÇÃO NA LOJA (A4)
      ========================================== -->
 <div id="secaoCartazA4" style="display: none;">
-  
-  <!-- Barra de Ação Superior (Oculta na Impressão) -->
-  <div class="no-print" style="max-width: 680px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; background: var(--admin-card-bg); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--admin-border); box-shadow: var(--card-shadow);">
-    <div>
-      <h3 style="font-size: 1.05rem; color: var(--admin-text-primary); font-weight: 700; margin: 0 0 2px 0;">Pré-visualização do Cartaz Oficial A4</h3>
-      <p style="font-size: 0.82rem; color: var(--admin-text-muted); margin: 0;">Cartaz diagramado para mural, balcão e recepção. Imprime em 1 folha A4 sem marcas de navegador.</p>
-    </div>
-    <button type="button" onclick="imprimirCartaz()" class="btn btn-primary" style="padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 17px; height: 17px;">
-        <polyline points="6 9 6 2 18 2 18 9"></polyline>
-        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-        <rect width="12" height="8" x="6" y="14"></rect>
-      </svg>
-      Imprimir Cartaz Oficial A4
-    </button>
-  </div>
-
-  <!-- CARTAZ OFICIAL QUE SERÁ IMPRESSO EM FOLHA A4 (MODELO ELEGANTE ANTERIOR) -->
-  <div class="cartaz-a4-preview-container">
-    <div id="cartazImpressao" class="cartaz-box-a4">
+  <div class="qr-workspace-grid">
+    
+    <!-- Coluna 1: Painel de Controle de Impressão (no-print) -->
+    <div class="qr-side-card no-print">
       
-      <!-- Cabeçalho do Cartaz: Logo MAX -->
-      <div class="cartaz-logo-wrap">
-        {% if tem_logo %}
-          <img src="{{ url_for('static', filename='img/logo.png', v=logo_version) }}" alt="MAX Supermercados" class="cartaz-logo-img">
-        {% else %}
-          <span class="brand-badge-max cartaz-logo-fallback">MAX</span>
-        {% endif %}
-      </div>
-
-      <!-- Título de Destaque -->
-      <div class="cartaz-headline-wrap">
-        <h1 class="cartaz-title">TRABALHE CONOSCO!</h1>
-        <p class="cartaz-subtitle">Venha fazer parte da nossa equipe</p>
-      </div>
-
-      <!-- QR Code em Destaque -->
-      <div class="cartaz-qr-wrap">
-        <div class="cartaz-qr-card">
-          <img src="{{ qrcode_svg }}" alt="QR Code Vagas" class="cartaz-qr-img">
+      <div class="qr-side-header">
+        <div class="card-badge-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 22px; height: 22px;">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect width="12" height="8" x="6" y="14"></rect>
+          </svg>
         </div>
-      </div>
-      
-      <!-- Instruções Claras para o Candidato -->
-      <div class="cartaz-instructions-wrap">
-        <h3 class="cartaz-action-title">Aponte a câmera do seu celular</h3>
-        <p class="cartaz-action-sub">Ficha de cadastro 100% digital, rápida e segura</p>
-        
-        <div class="cartaz-paperless-badge">
-          Não precisa imprimir currículo em papel
+        <div>
+          <h3>Impressão do Cartaz A4</h3>
+          <p>Material de divulgação física diagramado para impressão em folha única</p>
         </div>
       </div>
 
-      <!-- Rodapé Institucional do Cartaz -->
-      <div class="cartaz-footer-wrap">
-        MAX Supermercados • Portal de Recrutamento & Seleção
+      <!-- Botão Primário Destacado -->
+      <button type="button" onclick="imprimirCartaz()" class="btn btn-primary" style="padding: 14px 18px; font-size: 0.98rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 19px; height: 19px;">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect width="12" height="8" x="6" y="14"></rect>
+        </svg>
+        Imprimir Cartaz Oficial A4
+      </button>
+
+      <!-- Especificações Técnicas -->
+      <div class="qr-spec-list">
+        <div class="qr-spec-item">
+          <span class="qr-spec-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Formato de Papel
+          </span>
+          <span class="qr-spec-val">A4 (210 × 297 mm)</span>
+        </div>
+        <div class="qr-spec-item">
+          <span class="qr-spec-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+              <rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect>
+            </svg>
+            Orientação
+          </span>
+          <span class="qr-spec-val">Retrato (Vertical)</span>
+        </div>
+        <div class="qr-spec-item">
+          <span class="qr-spec-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Enquadramento
+          </span>
+          <span class="qr-spec-val" style="color: #10b981;">1 Folha Única</span>
+        </div>
+        <div class="qr-spec-item">
+          <span class="qr-spec-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            Cabeçalhos Web
+          </span>
+          <span class="qr-spec-val" style="color: #10b981;">Ocultos pelo Sistema</span>
+        </div>
+      </div>
+
+      <!-- Dicas de Afixação na Loja -->
+      <div class="qr-tips-box">
+        <strong style="display: block; margin-bottom: 4px; color: var(--admin-text-primary);">Onde afixar na loja:</strong>
+        Mural de comunicados internos, balcão de crediário/atendimento ao cliente e porta de entrada da unidade.
       </div>
 
     </div>
-  </div>
 
+    <!-- Coluna 2: Área de Pré-visualização do Cartaz A4 -->
+    <div class="qr-preview-stage">
+      
+      <!-- Cabeçalho da Prancheta -->
+      <div class="qr-stage-header no-print">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 17px; height: 17px; color: var(--primary);">
+            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+          </svg>
+          <span style="font-weight: 700; font-size: 0.92rem; color: var(--admin-text-primary);">Pré-visualização da Folha Oficial A4</span>
+        </div>
+        <span style="font-size: 0.75rem; font-weight: 700; background: rgba(37, 99, 235, 0.12); color: var(--primary); padding: 4px 10px; border-radius: 20px;">Escala Proporcional A4</span>
+      </div>
+
+      <!-- CARTAZ OFICIAL QUE SERÁ IMPRESSO EM FOLHA A4 -->
+      <div class="cartaz-a4-preview-container">
+        <div id="cartazImpressao" class="cartaz-box-a4">
+          
+          <!-- Cabeçalho do Cartaz: Logo MAX -->
+          <div class="cartaz-logo-wrap">
+            {% if tem_logo %}
+              <img src="{{ url_for('static', filename='img/logo.png', v=logo_version) }}" alt="MAX Supermercados" class="cartaz-logo-img">
+            {% else %}
+              <span class="brand-badge-max cartaz-logo-fallback">MAX</span>
+            {% endif %}
+          </div>
+
+          <!-- Título de Destaque -->
+          <div class="cartaz-headline-wrap">
+            <h1 class="cartaz-title">TRABALHE CONOSCO!</h1>
+            <p class="cartaz-subtitle">Venha fazer parte da nossa equipe</p>
+          </div>
+
+          <!-- QR Code em Destaque -->
+          <div class="cartaz-qr-wrap">
+            <div class="cartaz-qr-card">
+              <img src="{{ qrcode_svg }}" alt="QR Code Vagas" class="cartaz-qr-img">
+            </div>
+          </div>
+          
+          <!-- Instruções Claras para o Candidato -->
+          <div class="cartaz-instructions-wrap">
+            <h3 class="cartaz-action-title">Aponte a câmera do seu celular</h3>
+            <p class="cartaz-action-sub">Ficha de cadastro 100% digital, rápida e segura</p>
+            
+            <div class="cartaz-paperless-badge">
+              Não precisa imprimir currículo em papel
+            </div>
+          </div>
+
+          <!-- Rodapé Institucional do Cartaz -->
+          <div class="cartaz-footer-wrap">
+            MAX Supermercados • Portal de Recrutamento & Seleção
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 </div>
 
 <script>
