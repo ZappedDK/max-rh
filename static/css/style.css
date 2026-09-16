@@ -1,0 +1,861 @@
+/* ==========================================
+   SISTEMA DE TEMAS DO PAINEL RH (CLARO / ESCURO)
+   ========================================== */
+:root, [data-admin-theme="light"] {
+  --primary: #0d47a1;
+  --primary-hover: #0a3880;
+  --primary-light: #e3f2fd;
+  --secondary: #e65100;
+  --admin-bg: #f8fafc;
+  --admin-card-bg: #ffffff;
+  --admin-border: #e2e8f0;
+  --admin-text-primary: #0f172a;
+  --admin-text-secondary: #334155;
+  --admin-text-muted: #64748b;
+  --sidebar-bg: #0d47a1;
+  --sidebar-text: #f8fafc;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.12);
+  --sidebar-item-active: rgba(255, 255, 255, 0.22);
+  --sidebar-border: rgba(255, 255, 255, 0.15);
+  --table-header-bg: #f1f5f9;
+  --table-row-hover: #f8fafc;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+[data-admin-theme="dark"] {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #1e3a8a;
+  --secondary: #f97316;
+  --admin-bg: #090d16;
+  --admin-card-bg: #111827;
+  --admin-border: #1f2937;
+  --admin-text-primary: #f8fafc;
+  --admin-text-secondary: #cbd5e1;
+  --admin-text-muted: #94a3b8;
+  --sidebar-bg: #0a0e1a;
+  --sidebar-text: #f8fafc;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-item-active: #2563eb;
+  --sidebar-border: #1e293b;
+  --table-header-bg: #1e293b;
+  --table-row-hover: #161f30;
+  --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--admin-bg);
+  color: var(--admin-text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ==========================================
+   LAYOUT COM SIDEBAR LATERAL ESQUERDA
+   ========================================== */
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  width: 260px;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-right: 1px solid var(--sidebar-border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  transition: background-color 0.3s ease;
+  z-index: 100;
+}
+
+.sidebar-brand {
+  padding: 24px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--sidebar-border);
+  text-decoration: none;
+  color: white;
+}
+
+.sidebar-logo-img {
+  height: 48px;
+  width: auto;
+  max-height: 52px;
+  max-width: 150px;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 7px;
+  padding: 2.5px;
+  display: block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+.sidebar-brand-title {
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.sidebar-brand-subtitle {
+  font-size: 0.72rem;
+  letter-spacing: 0.8px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  color: #cbd5e1;
+}
+
+.brand-badge-max {
+  background-color: white;
+  color: #0d47a1;
+  font-weight: 900;
+  font-size: 1.3rem;
+  padding: 6px 16px;
+  border-radius: 8px;
+  letter-spacing: 1.5px;
+}
+
+.sidebar-nav {
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  opacity: 0.9;
+}
+
+.sidebar-nav-item svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+
+.sidebar-nav-item:hover {
+  background: var(--sidebar-item-hover);
+  opacity: 1;
+}
+
+.sidebar-nav-item.active {
+  background: var(--sidebar-item-active);
+  font-weight: 700;
+  opacity: 1;
+}
+
+.sidebar-footer {
+  padding: 16px 14px;
+  border-top: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.theme-toggle-admin {
+  background: var(--sidebar-item-hover);
+  border: 1px solid var(--sidebar-border);
+  color: var(--sidebar-text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
+}
+.theme-toggle-admin:hover {
+  background: var(--sidebar-item-active);
+}
+
+.user-profile-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 8px;
+}
+
+.user-profile-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.user-profile-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-profile-role {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 30px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ==========================================
+   COMPONENTES GERAIS (CARDS, BOTÕES, ALERTAS)
+   ========================================== */
+.alert-container {
+  max-width: 1400px;
+  margin: 15px auto 0;
+  padding: 0 30px;
+  width: 100%;
+}
+
+.alert {
+  padding: 12px 18px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.alert-success { background: #e8f5e9; color: #1b5e20; border: 1px solid #c8e6c9; }
+.alert-danger { background: #ffebee; color: #b71c1c; border: 1px solid #ffcdd2; }
+.alert-warning { background: #fff8e1; color: #b45309; border: 1px solid #fde68a; }
+.alert-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-secondary { background: var(--secondary); color: white; }
+.btn-secondary:hover { opacity: 0.9; }
+
+.btn-success { background: #16a34a; color: white; }
+.btn-success:hover { background: #15803d; }
+
+.btn-danger { background: #dc2626; color: white; }
+.btn-danger:hover { background: #b91c1c; }
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--admin-border);
+  color: var(--admin-text-primary);
+}
+.btn-outline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Badges de Status */
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.status-pendente { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+.status-em_analise { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.status-contratar { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.status-nao_contratar { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.status-banco_talentos { background: #faf5ff; color: #9333ea; border: 1px solid #e9d5ff; }
+
+/* Responsividade Mobile Sidebar */
+@media (max-width: 900px) {
+  .admin-wrapper {
+    flex-direction: column;
+  }
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* ==========================================
+   BARRA DE FILTROS DO DASHBOARD (MODERNA)
+   ========================================== */
+.filter-toolbar {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 22px;
+  box-shadow: var(--card-shadow);
+}
+
+.filter-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.filter-group.flex-grow-2 {
+  flex: 2 1 260px;
+}
+
+.filter-group.flex-grow-1 {
+  flex: 1.2 1 190px;
+}
+
+.filter-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--admin-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-label svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.8;
+}
+
+.filter-control-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.filter-control-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: var(--admin-text-muted);
+  pointer-events: none;
+}
+
+.filter-input {
+  width: 100%;
+  height: 42px;
+  padding: 8px 14px 8px 36px;
+  background: var(--admin-bg);
+  color: var(--admin-text-primary);
+  border: 1.5px solid var(--admin-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.filter-select {
+  width: 100%;
+  height: 42px;
+  padding: 8px 34px 8px 36px;
+  background: var(--admin-bg);
+  color: var(--admin-text-primary);
+  border: 1.5px solid var(--admin-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.filter-select-arrow {
+  position: absolute;
+  right: 12px;
+  width: 14px;
+  height: 14px;
+  color: var(--admin-text-muted);
+  pointer-events: none;
+}
+
+.filter-input:focus, .filter-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  background: var(--admin-card-bg);
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+}
+
+.filter-btn {
+  height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   SELETOR DE ABAS / CAIXAS (QR CODE / CARTAZ)
+   ========================================== */
+.qr-tab-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.qr-tab-card {
+  background: var(--admin-card-bg);
+  border: 2px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.25s ease;
+  text-decoration: none;
+  color: var(--admin-text-primary);
+  box-shadow: var(--card-shadow);
+  user-select: none;
+}
+
+.qr-tab-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.qr-tab-card.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+}
+
+.qr-tab-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.qr-tab-card.active .qr-tab-icon {
+  background: var(--primary);
+  color: white;
+}
+
+.qr-tab-info h4 {
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin: 0 0 3px 0;
+}
+
+.qr-tab-info p {
+  font-size: 0.82rem;
+  color: var(--admin-text-muted);
+  margin: 0;
+}
+
+/* ==========================================
+   MODELO ELEGANTE DO CARTAZ A4 (ORIGINAL REFINADO)
+   ========================================== */
+.cartaz-a4-preview-container {
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+.cartaz-box-a4 {
+  background: #ffffff;
+  border: 3px double #0d47a1;
+  border-radius: 16px;
+  padding: 42px 32px;
+  text-align: center;
+  color: #0f172a;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.cartaz-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.cartaz-logo-img {
+  height: 65px;
+  width: auto;
+  max-width: 240px;
+  object-fit: contain;
+  display: block;
+}
+
+.cartaz-logo-fallback {
+  font-size: 2.2rem;
+  padding: 6px 28px;
+  border: 2px solid #0d47a1;
+  color: #0d47a1;
+}
+
+.cartaz-headline-wrap {
+  margin-bottom: 22px;
+}
+
+.cartaz-title {
+  font-size: 2.1rem;
+  color: #0d47a1;
+  margin: 0 0 6px 0;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  line-height: 1.15;
+}
+
+.cartaz-subtitle {
+  font-size: 1.15rem;
+  color: #334155;
+  margin: 0;
+  font-weight: 600;
+}
+
+.cartaz-qr-wrap {
+  margin: 22px auto;
+}
+
+.cartaz-qr-card {
+  display: inline-block;
+  padding: 16px;
+  background: #ffffff;
+  border: 2px solid #0d47a1;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(13, 71, 161, 0.12);
+}
+
+.cartaz-qr-img {
+  width: 200px;
+  height: 200px;
+  display: block;
+}
+
+.cartaz-instructions-wrap {
+  margin-top: 10px;
+}
+
+.cartaz-action-title {
+  color: #0d47a1;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+}
+
+.cartaz-action-sub {
+  font-size: 0.92rem;
+  color: #64748b;
+  margin: 0 0 16px 0;
+}
+
+.cartaz-paperless-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 0.86rem;
+  color: #475569;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+.cartaz-footer-wrap {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 500;
+  width: 100%;
+}
+
+/* ==========================================
+   IMPRESSÃO EXCLUSIVA DO CARTAZ EM FOLHA A4 ÚNICA
+   (Sem Margens de Site, Sem Cabeçalhos/Rodapés de Navegador, SEM QUEBRA)
+   ========================================== */
+@page {
+  size: A4 portrait;
+  margin: 0mm !important;
+}
+
+@media print {
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print,
+  .admin-sidebar,
+  .admin-topbar,
+  .dashboard-header,
+  .qr-tab-nav,
+  #secaoAcessoRapido,
+  nav, aside, footer, header {
+    display: none !important;
+  }
+
+  .admin-wrapper,
+  .admin-main,
+  .admin-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  #secaoCartazA4 {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .cartaz-a4-preview-container {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .cartaz-box-a4 {
+    width: 182mm !important;
+    height: 266mm !important;
+    max-height: 266mm !important;
+    margin: 14mm auto !important;
+    padding: 22mm 18mm 16mm !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 3.5pt double #0d47a1 !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    text-align: center !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    overflow: hidden !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cartaz-logo-wrap {
+    margin-bottom: 5mm !important;
+  }
+
+  .cartaz-logo-img {
+    height: 24mm !important;
+    max-height: 24mm !important;
+    width: auto !important;
+    max-width: 75mm !important;
+    object-fit: contain !important;
+  }
+
+  .cartaz-headline-wrap {
+    margin-bottom: 5mm !important;
+  }
+
+  .cartaz-title {
+    font-size: 32pt !important;
+    color: #0d47a1 !important;
+    font-weight: 900 !important;
+    margin: 0 0 3mm 0 !important;
+    letter-spacing: 0.5px !important;
+    line-height: 1.1 !important;
+  }
+
+  .cartaz-subtitle {
+    font-size: 16pt !important;
+    color: #334155 !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+  }
+
+  .cartaz-qr-wrap {
+    margin: 4mm auto 5mm !important;
+  }
+
+  .cartaz-qr-card {
+    padding: 4.5mm !important;
+    border: 2.5pt solid #0d47a1 !important;
+    border-radius: 14px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    display: inline-block !important;
+  }
+
+  .cartaz-qr-img {
+    width: 60mm !important;
+    height: 60mm !important;
+    display: block !important;
+  }
+
+  .cartaz-instructions-wrap {
+    margin-top: 2mm !important;
+  }
+
+  .cartaz-action-title {
+    font-size: 17pt !important;
+    color: #0d47a1 !important;
+    font-weight: 800 !important;
+    margin: 0 0 2mm 0 !important;
+  }
+
+  .cartaz-action-sub {
+    font-size: 11.5pt !important;
+    color: #64748b !important;
+    margin: 0 0 4mm 0 !important;
+  }
+
+  .cartaz-paperless-badge {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    padding: 3mm 8mm !important;
+    border-radius: 20px !important;
+    font-size: 10pt !important;
+    font-weight: 600 !important;
+    border: 1px solid #cbd5e1 !important;
+    display: inline-block !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cartaz-footer-wrap {
+    width: 100% !important;
+    margin-top: 4mm !important;
+    padding-top: 4mm !important;
+    border-top: 1pt solid #cbd5e1 !important;
+    font-size: 9.5pt !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+  }
+}
+

@@ -1,0 +1,233 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Controle de Usuários - MAX RH{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <h1 style="font-size: 1.6rem; color: var(--admin-text-primary); font-weight: 700;">Controle de Usuários & Permissões</h1>
+    <p style="color: var(--admin-text-muted); font-size: 0.95rem; margin-top: 4px;">Cadastre recrutadores e gerencie os níveis de acesso ao sistema</p>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
+  
+  <!-- Formulário de Novo Usuário -->
+  <div class="card-box" style="height: fit-content;">
+    <h3 style="color: #2563eb; margin-bottom: 16px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <line x1="19" y1="8" x2="19" y2="14"></line>
+        <line x1="22" y1="11" x2="16" y2="11"></line>
+      </svg>
+      Novo Usuário
+    </h3>
+    
+    <form method="POST" action="{{ url_for('admin_usuarios') }}">
+      <input type="hidden" name="action" value="criar">
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label" style="font-size: 0.85rem; color: var(--admin-text-muted);">Nome Completo</label>
+        <input type="text" name="nome" class="form-input" placeholder="Ex: Maria Silva" required style="background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label" style="font-size: 0.85rem; color: var(--admin-text-muted);">Nome de Usuário (Login)</label>
+        <input type="text" name="username" class="form-input" placeholder="mariasilva" required style="background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label" style="font-size: 0.85rem; color: var(--admin-text-muted);">E-mail Corporativo</label>
+        <input type="email" name="email" class="form-input" placeholder="maria@supermercadomax.com.br" required style="background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label" style="font-size: 0.85rem; color: var(--admin-text-muted);">Senha Inicial</label>
+        <input type="password" name="password" class="form-input" placeholder="Mínimo 6 caracteres" required style="background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 18px;">
+        <label class="form-label" style="font-size: 0.85rem; color: var(--admin-text-muted);">Perfil de Acesso</label>
+        <select name="role" class="form-select" style="background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);">
+          <option value="recrutador" selected>Recrutador (Visualizar, Avaliar e Anotar)</option>
+          <option value="admin">Administrador (Acesso Total e Configurações)</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <line x1="19" y1="8" x2="19" y2="14"></line>
+          <line x1="22" y1="11" x2="16" y2="11"></line>
+        </svg>
+        Cadastrar Usuário
+      </button>
+    </form>
+  </div>
+
+  <!-- Coluna da Direita: Filtros e Lista de Usuários -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    
+    <!-- Filtros de Usuários -->
+    <div class="filter-toolbar" style="margin-bottom: 0; padding: 14px 16px;">
+      <form method="GET" action="{{ url_for('admin_usuarios') }}" class="filter-form">
+        
+        <!-- Busca por Nome / Username / Email -->
+        <div class="filter-group flex-grow-2" style="min-width: 170px;">
+          <label class="filter-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Buscar Usuário
+          </label>
+          <div class="filter-control-wrapper">
+            <svg class="filter-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" name="q" value="{{ busca_atual }}" class="filter-input" placeholder="Nome, login ou e-mail...">
+          </div>
+        </div>
+
+        <!-- Filtro por Perfil -->
+        <div class="filter-group flex-grow-1" style="min-width: 130px;">
+          <label class="filter-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            Perfil
+          </label>
+          <div class="filter-control-wrapper">
+            <select name="role" class="filter-select">
+              <option value="">Todos os perfis</option>
+              <option value="admin" {% if role_atual == 'admin' %}selected{% endif %}>Administrador</option>
+              <option value="recrutador" {% if role_atual == 'recrutador' %}selected{% endif %}>Recrutador</option>
+            </select>
+            <svg class="filter-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Filtro por Status -->
+        <div class="filter-group flex-grow-1" style="min-width: 130px;">
+          <label class="filter-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Status
+          </label>
+          <div class="filter-control-wrapper">
+            <select name="status" class="filter-select">
+              <option value="">Todos os status</option>
+              <option value="ativo" {% if status_atual == 'ativo' %}selected{% endif %}>Ativo</option>
+              <option value="inativo" {% if status_atual == 'inativo' %}selected{% endif %}>Inativo</option>
+            </select>
+            <svg class="filter-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="filter-actions">
+          <button type="submit" class="filter-btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Filtrar
+          </button>
+          {% if busca_atual or role_atual or status_atual %}
+            <a href="{{ url_for('admin_usuarios') }}" class="filter-btn btn-outline" title="Limpar filtros">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Limpar
+            </a>
+          {% endif %}
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Lista de Usuários Existentes -->
+    <div class="data-table-container">
+      {% if usuarios %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nome / E-mail</th>
+              <th>Usuário</th>
+              <th>Perfil</th>
+              <th>Status</th>
+              <th style="text-align: right;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in usuarios %}
+              <tr>
+                <td>
+                  <strong style="color: var(--admin-text-primary);">{{ u.nome }}</strong>
+                  <div style="font-size: 0.8rem; color: var(--admin-text-muted);">{{ u.email }}</div>
+                </td>
+                <td><code>{{ u.username }}</code></td>
+                <td>
+                  {% if u.role == 'admin' %}
+                    <span style="background: rgba(37, 99, 235, 0.15); color: #2563eb; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">ADMIN</span>
+                  {% else %}
+                    <span style="background: var(--table-header-bg); color: var(--admin-text-muted); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">RECRUTADOR</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if u.ativo %}
+                    <span style="color: #10b981; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style="width: 8px; height: 8px;"><circle cx="12" cy="12" r="10"></circle></svg>
+                      Ativo
+                    </span>
+                  {% else %}
+                    <span style="color: #ef4444; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style="width: 8px; height: 8px;"><circle cx="12" cy="12" r="10"></circle></svg>
+                      Inativo
+                    </span>
+                  {% endif %}
+                </td>
+                <td style="text-align: right;">
+                  {% if u.id != current_user.id %}
+                    <form method="POST" action="{{ url_for('admin_usuarios') }}" style="display: inline-block;">
+                      <input type="hidden" name="action" value="toggle_status">
+                      <input type="hidden" name="user_id" value="{{ u.id }}">
+                      <button type="submit" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.78rem;">
+                        {{ 'Desativar' if u.ativo else 'Ativar' }}
+                      </button>
+                    </form>
+                  {% else %}
+                    <span style="font-size: 0.8rem; color: var(--admin-text-muted); font-weight: 600;">(Você)</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div style="text-align: center; padding: 40px 20px; color: var(--admin-text-muted);">
+          <div style="margin-bottom: 12px; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--admin-bg);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; color: var(--admin-text-muted);">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <p style="font-size: 0.9rem; margin: 0;">Nenhum usuário encontrado para os filtros selecionados.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

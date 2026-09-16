@@ -1,0 +1,428 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Ficha de {{ candidato.nome_completo }} - MAX RH{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+  <div>
+    <a href="{{ url_for('admin_dashboard') }}" style="color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px;">
+      ← Voltar para a lista de candidatos
+    </a>
+    <h1 style="font-size: 1.5rem; color: var(--admin-text-primary); font-weight: 700;">
+      {{ candidato.nome_completo }}
+    </h1>
+    <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+      <span style="font-size: 0.85rem; color: var(--admin-text-muted);">Protocolo: <strong style="color: #2563eb;">{{ candidato.protocolo }}</strong></span>
+      <span>•</span>
+      <span style="font-size: 0.85rem; color: var(--admin-text-muted);">Cadastrado em: {{ candidato.data_cadastro.strftime('%d/%m/%Y às %H:%M') }}</span>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <a href="{{ url_for('admin_candidato_imprimir', id=candidato.id) }}" target="_blank" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+        <rect width="12" height="8" x="6" y="14"></rect>
+      </svg>
+      Imprimir / Gerar PDF
+    </a>
+    <span class="status-badge status-{{ candidato.status }}" style="font-size: 0.9rem; padding: 8px 16px;">
+      {{ candidato.status|replace('_', ' ') }}
+    </span>
+  </div>
+</div>
+
+<!-- Barra de Ação de Mudança de Status -->
+<div class="card-box" style="padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+  <div style="font-weight: 700; color: var(--admin-text-primary); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; color: var(--primary);">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 14 14"></polyline>
+    </svg>
+    Decisão do Recrutador / RH:
+  </div>
+  <form method="POST" action="{{ url_for('admin_alterar_status', id=candidato.id) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <button type="submit" name="status" value="contratar" class="btn btn-success" style="padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      Contratar
+    </button>
+    <button type="submit" name="status" value="nao_contratar" class="btn btn-danger" style="padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+      Não Contratar
+    </button>
+    <button type="submit" name="status" value="em_analise" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      Em Análise
+    </button>
+    <button type="submit" name="status" value="banco_talentos" class="btn" style="background: #9333ea; color: white; padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+      Banco de Talentos
+    </button>
+    <button type="submit" name="status" value="pendente" class="btn btn-outline" style="padding: 8px 14px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      Pendente
+    </button>
+  </form>
+</div>
+
+<!-- Layout em Grid -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+  
+  <!-- Coluna da Ficha Principal -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <!-- 0. Vaga e Unidade -->
+    <div class="card-box">
+      <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 14px; border-bottom: 2px solid var(--admin-border); padding-bottom: 6px;">
+        Vaga Pretendida
+      </h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Cargo Pretendido</span>
+          <strong>{{ candidato.cargo_pretendido }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Pretensão Salarial</span>
+          <strong>{{ candidato.pretensao_salarial or 'Não informada' }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Unidade de Escolha</span>
+          <strong>{{ candidato.loja_proxima }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. Dados Pessoais & Endereço -->
+    <div class="card-box">
+      <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 14px; border-bottom: 2px solid var(--admin-border); padding-bottom: 6px;">
+        1. Dados do Candidato
+      </h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Nome Completo</span>
+          <strong>{{ candidato.nome_completo }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Nascimento / Idade</span>
+          <strong>{{ candidato.data_nascimento }} ({{ candidato.idade or '-' }} anos)</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Sexo</span>
+          <strong>{{ candidato.sexo or '-' }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Naturalidade</span>
+          <strong>{{ candidato.cidade_nascimento or '-' }} / {{ candidato.estado_nascimento or '-' }}</strong>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Celular</span>
+          <strong>
+            <a href="https://api.whatsapp.com/send?phone=55{{ candidato.celular|replace('(', '')|replace(')', '')|replace(' ', '')|replace('-', '') }}" target="_blank" style="color: #10b981; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              <span>{{ candidato.celular }}</span>
+            </a>
+          </strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Telefone Recado</span>
+          <strong>{{ candidato.telefone_recado or '-' }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">E-mail</span>
+          <strong>{{ candidato.email or '-' }}</strong>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Nome da Mãe</span>
+          <strong>{{ candidato.nome_mae or '-' }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Estado Civil / Companheiro</span>
+          <strong>{{ candidato.estado_civil or '-' }} {% if candidato.companheiro %}({{ candidato.companheiro }}){% endif %}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Filhos</span>
+          <strong>{{ candidato.possui_filhos }} {% if candidato.possui_filhos == 'Sim' %}({{ candidato.qtd_filhos }}){% endif %}</strong>
+        </div>
+      </div>
+
+      <div style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 8px; padding: 12px; margin-top: 10px;">
+        <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Endereço Residencial</span>
+        <strong>{{ candidato.endereco or '-' }}, Nº {{ candidato.numero or 'S/N' }} {% if candidato.complemento %}- {{ candidato.complemento }}{% endif %}</strong><br>
+        <span style="font-size: 0.85rem; color: var(--admin-text-muted);">
+          {% if candidato.quadra %}Qd: {{ candidato.quadra }} {% endif %}
+          {% if candidato.lote %}Lt: {{ candidato.lote }} • {% endif %}
+          Bairro: {{ candidato.bairro or '-' }} • {{ candidato.cidade or '-' }}/{{ candidato.uf or '-' }} • CEP: {{ candidato.cep or '-' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- 2. Documentos, 3. Instrução, 4. Características, 5. Medidas -->
+    <div class="card-box">
+      <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 14px; border-bottom: 2px solid var(--admin-border); padding-bottom: 6px;">
+        2. Documentos, Formação e Medidas
+      </h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 16px;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">CPF</span>
+          <strong style="color: #2563eb;">{{ candidato.cpf }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">RG / Expedição</span>
+          <strong>{{ candidato.rg or '-' }} {% if candidato.orgao_expedicao %}({{ candidato.orgao_expedicao }}){% endif %}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">PIS / PASEP</span>
+          <strong>{{ candidato.pis_pasep or '-' }}</strong>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 16px;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Escolaridade</span>
+          <strong>{{ candidato.grau_escolaridade or '-' }} ({{ candidato.nivel_ensino or '-' }})</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Cor da Pele / Etnia</span>
+          <strong>{{ candidato.cor_pele or '-' }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">PCD / Deficiente Físico</span>
+          <strong>{{ candidato.deficiente_fisico }} {% if candidato.deficiente_fisico == 'Sim' %}({{ candidato.deficiente_descricao }}){% endif %}</strong>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Medidas de Uniforme</span>
+          <strong>Camisa: {{ candidato.camisa or '-' }} | Calçado: {{ candidato.calcado or '-' }}</strong>
+        </div>
+        <div style="grid-column: span 2;">
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Outros Cursos</span>
+          <strong>{{ candidato.outros_cursos or 'Nenhum curso adicional informado' }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Experiências Profissionais -->
+    <div class="card-box">
+      <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 14px; border-bottom: 2px solid var(--admin-border); padding-bottom: 6px;">
+        6. Informações Profissionais
+      </h3>
+      {% if candidato.experiencias %}
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          {% for exp in candidato.experiencias %}
+            <div style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 8px; padding: 14px;">
+              <div style="font-weight: 700; color: var(--admin-text-primary); margin-bottom: 6px;">
+                {{ exp.ordem }}º Emprego: {{ exp.nome_empresa }}
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 0.9rem;">
+                <div>
+                  <span style="color: var(--admin-text-muted); font-size: 0.8rem; display: block;">Função Exercida:</span>
+                  <strong>{{ exp.funcao or '-' }}</strong>
+                </div>
+                <div>
+                  <span style="color: var(--admin-text-muted); font-size: 0.8rem; display: block;">Tempo na Empresa:</span>
+                  <strong>{{ exp.tempo_empresa or '-' }}</strong>
+                </div>
+                <div>
+                  <span style="color: var(--admin-text-muted); font-size: 0.8rem; display: block;">Motivo da Saída:</span>
+                  <strong>{{ exp.motivo_saida or '-' }}</strong>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--admin-text-muted); font-size: 0.9rem;">Nenhuma experiência profissional anterior informada (Primeiro Emprego).</p>
+      {% endif %}
+    </div>
+
+    <!-- 7. Saúde & 8. Complementares -->
+    <div class="card-box">
+      <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 14px; border-bottom: 2px solid var(--admin-border); padding-bottom: 6px;">
+        7. Saúde e Informações Complementares
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+        <tbody>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); width: 60%; border-bottom: 1px solid var(--admin-border);">1. Problema de saúde atual ou anterior?</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.saude_problema or 'Não' }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">2. Toma alguma medicação contínua?</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.saude_medicacao or 'Não' }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">3. Sofreu algum acidente?</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.saude_acidente or 'Não' }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">4. Já fez alguma cirurgia?</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.saude_cirurgia or 'Não' }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">5. Ficou internado alguma vez?</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.saude_internado or 'Não' }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">6. Último dia que foi ao médico e motivo?</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.saude_ultimo_medico or '-' }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">7. Pode pegar peso?</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.saude_pegar_peso or 'Sim' }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">8. Sente dores na coluna?</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.saude_coluna or 'Não' }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">Horas Extras / Finais de Semana:</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">Horas extras: {{ candidato.comp_horas_extras }} | FDS/Feriado: {{ candidato.comp_finais_semana }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">Parente/Amigo na Empresa:</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.comp_tem_conhecido }} {% if candidato.comp_nome_conhecido %}(Nome: {{ candidato.comp_nome_conhecido }}){% endif %}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: var(--admin-text-muted);">Disponibilidade de Horário:</td>
+            <td style="padding: 8px 0; font-weight: 600;">{{ candidato.comp_disponibilidade or 'Total' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Assinatura Digital e Termo LGPD -->
+    <div class="card-box">
+      <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 14px; border-bottom: 2px solid var(--admin-border); padding-bottom: 6px;">
+        Termo de Ciência e Assinatura Digital
+      </h3>
+      <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+        <div style="flex: 1;">
+          <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin-bottom: 6px;">
+            Consentimento LGPD aceito digitalmente. IP de envio: <code>{{ candidato.ip_origem or '127.0.0.1' }}</code>
+          </p>
+          <p style="font-size: 0.85rem; color: #10b981; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Declaração de veracidade confirmada pelo titular.
+          </p>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block; margin-bottom: 4px;">Rubrica / Assinatura do Candidato:</span>
+          {% if candidato.assinatura_digital %}
+            <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; background: #ffffff;">
+              <img src="{{ candidato.assinatura_digital }}" alt="Assinatura do Candidato" style="max-height: 90px; display: block;">
+            </div>
+          {% else %}
+            <span style="color: var(--admin-text-muted); font-size: 0.85rem;">Assinatura não registrada</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Coluna Lateral: Observações e Anexos -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <!-- Painel de Observações Internas do RH -->
+    <div class="card-box">
+      <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 14px;">
+        Anotações Internas do RH
+      </h3>
+
+      <form method="POST" action="{{ url_for('admin_adicionar_observacao', id=candidato.id) }}" style="margin-bottom: 16px;">
+        <textarea name="texto" class="form-textarea" placeholder="Adicionar nota ou observação sobre a entrevista..." required style="min-height: 85px; margin-bottom: 8px; background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);"></textarea>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 8px;">Salvar Anotação</button>
+      </form>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto;">
+        {% for obs in candidato.observacoes %}
+          <div style="background: var(--admin-bg); border-left: 3px solid #2563eb; padding: 10px 12px; border-radius: 4px; font-size: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--admin-text-muted); font-size: 0.78rem;">
+              <strong>{{ obs.autor.nome }}</strong>
+              <span>{{ obs.data_criacao.strftime('%d/%m/%Y %H:%M') }}</span>
+            </div>
+            <div style="color: var(--admin-text-primary); white-space: pre-wrap;">{{ obs.texto }}</div>
+          </div>
+        {% else %}
+          <p style="color: var(--admin-text-muted); font-size: 0.85rem; text-align: center; margin: 10px 0;">Nenhuma anotação cadastrada ainda.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Painel de Anexos (Documentos e Fotos) -->
+    <div class="card-box">
+      <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+          <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+        </svg>
+        Anexos e Documentos
+      </h3>
+
+      <form method="POST" action="{{ url_for('admin_upload_anexo', id=candidato.id) }}" enctype="multipart/form-data" style="margin-bottom: 16px;">
+        <div style="margin-bottom: 8px;">
+          <label class="form-label" style="font-size: 0.82rem; color: var(--admin-text-muted);">Tipo do Arquivo</label>
+          <select name="tipo" class="form-select" style="min-height: 38px; background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);">
+            <option value="foto_candidato">Foto do Candidato (3x4)</option>
+            <option value="documento" selected>Foto de Documento (RG / CNH)</option>
+            <option value="curriculo">Currículo / Carteira</option>
+            <option value="outro">Outro Arquivo</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <input type="file" name="arquivo" class="form-input" style="padding: 6px; min-height: 38px; background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);" required accept=".png,.jpg,.jpeg,.pdf">
+        </div>
+
+        <button type="submit" class="btn btn-outline" style="width: 100%; padding: 8px; font-size: 0.88rem;">
+          Fazer Upload do Arquivo
+        </button>
+      </form>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        {% for anexo in candidato.anexos %}
+          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--admin-bg); border: 1px solid var(--admin-border); padding: 8px 12px; border-radius: 6px; font-size: 0.85rem;">
+            <div>
+              <div style="font-weight: 600; color: var(--admin-text-primary); max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ anexo.nome_original }}</div>
+              <small style="color: var(--admin-text-muted);">{{ anexo.tipo|replace('_', ' ')|capitalize }}</small>
+            </div>
+            <a href="{{ url_for('static', filename='uploads/' + anexo.nome_salvo) }}" target="_blank" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.78rem;">
+              Abrir
+            </a>
+          </div>
+        {% else %}
+          <p style="color: var(--admin-text-muted); font-size: 0.85rem; text-align: center; margin: 10px 0;">Nenhum anexo adicionado.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

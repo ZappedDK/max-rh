@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ficha de Cadastro e Solicitação de Emprego - MAX</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-form.css') }}">
+</head>
+<body>
+
+<div class="mobile-app-wrapper">
+  
+  <!-- Header Mobile com Logo Oficial e Alternador de Tema -->
+  <header class="mobile-header">
+    <div class="header-brand-box">
+      {% if tem_logo %}
+        <img src="{{ url_for('static', filename='img/logo.png', v=logo_version) }}" alt="MAX" class="header-logo-img">
+      {% else %}
+        <div class="header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+          </svg>
+        </div>
+      {% endif %}
+      <div class="header-titles">
+        <h1>Ficha de Emprego</h1>
+        <p>Cadastro de Candidatos</p>
+      </div>
+    </div>
+
+    <!-- Botão de Alternar Tema (Claro / Escuro) -->
+    <button type="button" id="themeToggleBtn" class="theme-toggle-btn" aria-label="Alternar tema">
+      <span id="themeIcon" style="display: inline-flex; align-items: center;">
+        <svg id="mThemeMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <svg id="mThemeSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; display: none;">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </span>
+      <span id="themeText">Escuro</span>
+    </button>
+  </header>
+
+  <!-- Mensagens Flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container" style="padding: 10px 20px 0;">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Barra de Progresso do Wizard -->
+  <div class="progress-container">
+    <div class="progress-info">
+      <span id="stepNumber">Etapa 1 de 6</span>
+      <span id="stepName">1. Vaga e Unidade</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <!-- Formulário Multi-etapas -->
+  <form id="formCandidatura" action="{{ url_for('candidatura') }}" method="POST" class="form-content">
+    
+    <!-- ==========================================
+         ETAPA 1: VAGA E LOJA
+    =========================================== -->
+    <div class="step-panel active" id="step-1">
+      <div class="step-title-box">
+        <h2>Vaga Pretendida</h2>
+        <p>Informe o cargo de interesse e a unidade de preferência</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cargo_pretendido">Cargo Pretendido <span class="required">*</span></label>
+        <input type="text" id="cargo_pretendido" name="cargo_pretendido" class="form-input" placeholder="Ex: Operador de Caixa, Repositor, Açougueiro..." required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="pretensao_salarial">Pretensão Salarial</label>
+        <input type="text" id="pretensao_salarial" name="pretensao_salarial" class="form-input" placeholder="R$ 0,00" inputmode="numeric">
+        <span class="input-hint">Opcional</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="loja_proxima">Unidade Mais Próxima de Você <span class="required">*</span></label>
+        <select id="loja_proxima" name="loja_proxima" class="form-select" required>
+          <option value="">Selecione uma unidade...</option>
+          {% for loja in lojas_disponiveis %}
+            <option value="{{ loja }}">{{ loja }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         ETAPA 2: DADOS PESSOAIS E ENDEREÇO
+    =========================================== -->
+    <div class="step-panel" id="step-2">
+      <div class="step-title-box">
+        <h2>Dados Pessoais</h2>
+        <p>Informações de identificação, filiação e endereço</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="nome_completo">Nome Completo (sem abreviação) <span class="required">*</span></label>
+        <input type="text" id="nome_completo" name="nome_completo" class="form-input apenas-letras" placeholder="Digite seu nome completo" required>
+        <span class="input-hint">Apenas letras, sem números ou símbolos</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cpf">CPF <span class="required">*</span></label>
+        <input type="text" id="cpf" name="cpf" class="form-input" placeholder="000.000.000-00" inputmode="numeric" required>
+        <div id="cpfError" class="input-error"></div>
+        <span class="input-hint">Apenas uma ficha permitida por CPF</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="data_nascimento">Data de Nascimento <span class="required">*</span></label>
+          <input type="text" id="data_nascimento" name="data_nascimento" class="form-input" placeholder="DD/MM/AAAA" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="idade">Idade</label>
+          <input type="number" id="idade" name="idade" class="form-input" placeholder="Automático" readonly style="opacity: 0.85;">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Sexo <span class="required">*</span></label>
+        <div class="radio-group-cards">
+          <label class="radio-card">
+            <input type="radio" name="sexo" value="Masculino" required> Masculino
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="sexo" value="Feminino"> Feminino
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="cidade_nascimento">Cidade de Nascimento</label>
+          <input type="text" id="cidade_nascimento" name="cidade_nascimento" class="form-input apenas-letras" placeholder="Cidade natal">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="estado_nascimento">UF Natal</label>
+          <input type="text" id="estado_nascimento" name="estado_nascimento" class="form-input apenas-letras" placeholder="GO, DF, SP..." maxlength="2" style="text-transform: uppercase;">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="celular">Celular (WhatsApp) <span class="required">*</span></label>
+          <input type="text" id="celular" name="celular" class="form-input mask-telefone" placeholder="(62) 90000-0000" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="telefone_recado">Telefone para Recado</label>
+          <input type="text" id="telefone_recado" name="telefone_recado" class="form-input mask-telefone" placeholder="(62) 0000-0000" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">E-mail</label>
+        <input type="email" id="email" name="email" class="form-input" placeholder="seuemail@exemplo.com">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="nome_mae">Nome da Mãe (completo sem abreviação)</label>
+        <input type="text" id="nome_mae" name="nome_mae" class="form-input apenas-letras" placeholder="Nome completo da sua mãe">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="estado_civil">Estado Civil</label>
+          <select id="estado_civil" name="estado_civil" class="form-select">
+            <option value="Solteiro">Solteiro(a)</option>
+            <option value="Casado">Casado(a)</option>
+            <option value="Divorciado">Divorciado(a)</option>
+            <option value="Viúvo">Viúvo(a)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="companheiro">Companheiro(a)</label>
+          <input type="text" id="companheiro" name="companheiro" class="form-input apenas-letras" placeholder="Nome se houver">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Possui filhos?</label>
+        <div class="radio-group-cards">
+          <label class="radio-card">
+            <input type="radio" name="possui_filhos" value="Não" id="filhos_nao" checked> Não
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="possui_filhos" value="Sim" id="filhos_sim"> Sim
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" id="boxQtdFilhos" style="display: none;">
+        <label class="form-label" for="qtd_filhos">Quantos filhos?</label>
+        <input type="number" id="qtd_filhos" name="qtd_filhos" class="form-input" min="0" value="0">
+      </div>
+
+      <div class="step-title-box" style="margin-top: 25px;">
+        <h2>Endereço</h2>
+        <p>Digite seu CEP para preencher a rua e bairro</p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="cep">CEP <span class="required">*</span></label>
+          <input type="text" id="cep" name="cep" class="form-input" placeholder="00000-000" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="bairro">Bairro</label>
+          <input type="text" id="bairro" name="bairro" class="form-input" placeholder="Bairro">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="endereco">Endereço / Logradouro</label>
+        <input type="text" id="endereco" name="endereco" class="form-input" placeholder="Rua, Avenida, Alameda...">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="numero">Número</label>
+          <input type="text" id="numero" name="numero" class="form-input" placeholder="Nº ou S/N">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="complemento">Complemento</label>
+          <input type="text" id="complemento" name="complemento" class="form-input" placeholder="Apto, Bloco...">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="quadra">Quadra</label>
+          <input type="text" id="quadra" name="quadra" class="form-input" placeholder="Qd">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="lote">Lote</label>
+          <input type="text" id="lote" name="lote" class="form-input" placeholder="Lt">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="cidade">Cidade</label>
+          <input type="text" id="cidade" name="cidade" class="form-input" placeholder="Cidade">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="uf">UF</label>
+          <input type="text" id="uf" name="uf" class="form-input" placeholder="UF" maxlength="2" style="text-transform: uppercase;">
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         ETAPA 3: DOCUMENTOS, INSTRUÇÃO E MEDIDAS
+    =========================================== -->
+    <div class="step-panel" id="step-3">
+      <div class="step-title-box">
+        <h2>Documentos e Instrução</h2>
+        <p>Dados documentais, formação e características</p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="rg">RG</label>
+          <input type="text" id="rg" name="rg" class="form-input" placeholder="Número do RG">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="orgao_expedicao">Órgão Expedição</label>
+          <input type="text" id="orgao_expedicao" name="orgao_expedicao" class="form-input" placeholder="Ex: SSP-GO">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="pis_pasep">PIS / PASEP</label>
+        <input type="text" id="pis_pasep" name="pis_pasep" class="form-input" placeholder="Número do PIS">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="grau_escolaridade">Grau de Escolaridade</label>
+          <select id="grau_escolaridade" name="grau_escolaridade" class="form-select">
+            <option value="Fundamental">Fundamental</option>
+            <option value="Médio" selected>Médio</option>
+            <option value="Superior">Superior</option>
+            <option value="Pós Graduação">Pós Graduação</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="nivel_ensino">Nível de Ensino</label>
+          <select id="nivel_ensino" name="nivel_ensino" class="form-select">
+            <option value="Concluído" selected>Concluído</option>
+            <option value="Em Curso">Em Curso</option>
+            <option value="Não Concluiu">Não Concluiu</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="outros_cursos">Outros Cursos</label>
+        <textarea id="outros_cursos" name="outros_cursos" class="form-textarea" placeholder="Ex: Informática, Atendimento ao Cliente, etc."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cor_pele">Cor da Pele / Etnia</label>
+        <select id="cor_pele" name="cor_pele" class="form-select">
+          <option value="Branca">Branca</option>
+          <option value="Parda" selected>Parda</option>
+          <option value="Negra">Negra</option>
+          <option value="Indígena">Indígena</option>
+          <option value="Amarela">Amarela</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Deficiente Físico (PCD)?</label>
+        <div class="radio-group-cards">
+          <label class="radio-card">
+            <input type="radio" name="deficiente_fisico" value="Não" id="def_nao" checked> Não
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="deficiente_fisico" value="Sim" id="def_sim"> Sim
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" id="boxDefDesc" style="display: none;">
+        <label class="form-label" for="deficiente_descricao">Descreva a deficiência</label>
+        <input type="text" id="deficiente_descricao" name="deficiente_descricao" class="form-input" placeholder="Qual a deficiência?">
+      </div>
+
+      <div class="step-title-box" style="margin-top: 25px;">
+        <h2>Medidas para Uniforme</h2>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="camisa">Tamanho da Camisa</label>
+          <select id="camisa" name="camisa" class="form-select">
+            <option value="P">P</option>
+            <option value="M" selected>M</option>
+            <option value="G">G</option>
+            <option value="GG">GG</option>
+            <option value="XGG">XGG</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="calcado">Nº do Calçado</label>
+          <input type="number" id="calcado" name="calcado" class="form-input" placeholder="Ex: 39" min="33" max="50">
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         ETAPA 4: INFORMAÇÕES PROFISSIONAIS
+    =========================================== -->
+    <div class="step-panel" id="step-4">
+      <div class="step-title-box">
+        <h2>Informações Profissionais</h2>
+        <p>Informe até 3 experiências anteriores (se houver)</p>
+      </div>
+
+      <!-- Emprego 1 -->
+      <div class="card-bloco">
+        <div class="card-bloco-header">1. Último Emprego</div>
+        <div class="form-group">
+          <label class="form-label" for="exp_empresa_1">Nome da Empresa</label>
+          <input type="text" id="exp_empresa_1" name="exp_empresa_1" class="form-input" placeholder="Nome da empresa">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="exp_tempo_1">Quanto tempo ficou?</label>
+            <input type="text" id="exp_tempo_1" name="exp_tempo_1" class="form-input" placeholder="Ex: 1 ano e 2 meses">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="exp_funcao_1">Função exercida</label>
+            <input type="text" id="exp_funcao_1" name="exp_funcao_1" class="form-input" placeholder="Cargo exercido">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="exp_motivo_1">Motivo da Saída</label>
+          <input type="text" id="exp_motivo_1" name="exp_motivo_1" class="form-input" placeholder="Ex: Término de contrato, busca de crescimento...">
+        </div>
+      </div>
+
+      <!-- Emprego 2 -->
+      <div class="card-bloco">
+        <div class="card-bloco-header">2. Penúltimo Emprego</div>
+        <div class="form-group">
+          <label class="form-label" for="exp_empresa_2">Nome da Empresa</label>
+          <input type="text" id="exp_empresa_2" name="exp_empresa_2" class="form-input" placeholder="Nome da empresa">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="exp_tempo_2">Quanto tempo ficou?</label>
+            <input type="text" id="exp_tempo_2" name="exp_tempo_2" class="form-input" placeholder="Ex: 6 meses">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="exp_funcao_2">Função exercida</label>
+            <input type="text" id="exp_funcao_2" name="exp_funcao_2" class="form-input" placeholder="Cargo exercido">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="exp_motivo_2">Motivo da Saída</label>
+          <input type="text" id="exp_motivo_2" name="exp_motivo_2" class="form-input" placeholder="Motivo da saída">
+        </div>
+      </div>
+
+      <!-- Emprego 3 -->
+      <div class="card-bloco">
+        <div class="card-bloco-header">3. Antepenúltimo Emprego</div>
+        <div class="form-group">
+          <label class="form-label" for="exp_empresa_3">Nome da Empresa</label>
+          <input type="text" id="exp_empresa_3" name="exp_empresa_3" class="form-input" placeholder="Nome da empresa">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="exp_tempo_3">Quanto tempo ficou?</label>
+            <input type="text" id="exp_tempo_3" name="exp_tempo_3" class="form-input" placeholder="Ex: 2 anos">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="exp_funcao_3">Função exercida</label>
+            <input type="text" id="exp_funcao_3" name="exp_funcao_3" class="form-input" placeholder="Cargo exercido">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="exp_motivo_3">Motivo da Saída</label>
+          <input type="text" id="exp_motivo_3" name="exp_motivo_3" class="form-input" placeholder="Motivo da saída">
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         ETAPA 5: SAÚDE E COMPLEMENTARES
+    =========================================== -->
+    <div class="step-panel" id="step-5">
+      <div class="step-title-box">
+        <h2>Saúde e Rotina</h2>
+        <p>Informações de aptidão física e rotina de trabalho</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="saude_problema">1. Já teve, ou tem algum problema de saúde? Se sim, qual?</label>
+        <input type="text" id="saude_problema" name="saude_problema" class="form-input" placeholder="Não / Se sim, descreva">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="saude_medicacao">2. Toma alguma medicação contínua? Qual?</label>
+        <input type="text" id="saude_medicacao" name="saude_medicacao" class="form-input" placeholder="Não / Se sim, qual medicação">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="saude_acidente">3. Sofreu algum acidente? Como?</label>
+        <input type="text" id="saude_acidente" name="saude_acidente" class="form-input" placeholder="Não / Se sim, como ocorreu">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="saude_cirurgia">4. Já fez alguma cirurgia? Qual?</label>
+        <input type="text" id="saude_cirurgia" name="saude_cirurgia" class="form-input" placeholder="Não / Se sim, qual cirurgia">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="saude_internado">5. Ficou internado alguma vez? Qual motivo?</label>
+        <input type="text" id="saude_internado" name="saude_internado" class="form-input" placeholder="Não / Se sim, motivo">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="saude_ultimo_medico">6. Qual foi o último dia que foi ao médico e qual o motivo?</label>
+        <input type="text" id="saude_ultimo_medico" name="saude_ultimo_medico" class="form-input" placeholder="Ex: Consulta de rotina há 3 meses">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">7. Pode pegar peso?</label>
+          <div class="radio-group-cards">
+            <label class="radio-card">
+              <input type="radio" name="saude_pegar_peso" value="Sim" checked> Sim
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="saude_pegar_peso" value="Não"> Não
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">8. Sente dores na coluna?</label>
+          <div class="radio-group-cards">
+            <label class="radio-card">
+              <input type="radio" name="saude_coluna" value="Não" checked> Não
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="saude_coluna" value="Sim"> Sim
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-title-box" style="margin-top: 25px;">
+        <h2>Informações Complementares</h2>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="comp_conhecimento_vaga">Como tomou conhecimento da vaga?</label>
+        <input type="text" id="comp_conhecimento_vaga" name="comp_conhecimento_vaga" class="form-input" placeholder="Ex: Indicação, Cartaz na Loja, Internet...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Na empresa você tem algum:</label>
+        <div class="radio-group-cards">
+          <label class="radio-card">
+            <input type="radio" name="comp_tem_conhecido" value="Não tenho" checked> Não tenho
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="comp_tem_conhecido" value="Parente"> Parente
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="comp_tem_conhecido" value="Amigo"> Amigo
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="comp_tem_conhecido" value="Conhecido"> Conhecido
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="comp_nome_conhecido">Nome do parente / conhecido na empresa (se houver):</label>
+        <input type="text" id="comp_nome_conhecido" name="comp_nome_conhecido" class="form-input apenas-letras" placeholder="Nome da pessoa">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Pode fazer horas extras?</label>
+          <div class="radio-group-cards">
+            <label class="radio-card">
+              <input type="radio" name="comp_horas_extras" value="Sim" checked> Sim
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="comp_horas_extras" value="Não"> Não
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Finais de semana e feriados?</label>
+          <div class="radio-group-cards">
+            <label class="radio-card">
+              <input type="radio" name="comp_finais_semana" value="Sim" checked> Sim
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="comp_finais_semana" value="Não"> Não
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="comp_disponibilidade">Qual a sua disponibilidade de horário?</label>
+        <input type="text" id="comp_disponibilidade" name="comp_disponibilidade" class="form-input" placeholder="Ex: Total, Manhã e Tarde, Noite...">
+      </div>
+    </div>
+
+    <!-- ==========================================
+         ETAPA 6: TERMO LGPD E ASSINATURA DIGITAL
+    =========================================== -->
+    <div class="step-panel" id="step-6">
+      <div class="step-title-box">
+        <h2>Termo LGPD e Assinatura</h2>
+        <p>Declaração de veracidade e consentimento</p>
+      </div>
+
+      <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); padding: 14px; border-radius: 9px; margin-bottom: 14px; font-size: 0.85rem; line-height: 1.5;">
+        "Declaro que as informações aqui prestadas são verídicas e pelas quais assumo toda e qualquer responsabilidade, e estou ciente que caso seja aprovado para a próxima etapa do processo seletivo receberei o contato em até 15 dias da presente data."
+      </div>
+
+      <div class="lgpd-box">
+        <strong>TERMO DE CONSENTIMENTO DE TRATAMENTO DE DADOS (LGPD)</strong><br><br>
+        Este documento visa registrar a manifestação livre, informada e inequívoca pela qual o Titular concorda com o tratamento de seus dados pessoais para finalidade específica, em conformidade com a Lei nº 13.709 – Lei Geral de Proteção de Dados Pessoais (LGPD).<br><br>
+        Ao manifestar sua aceitação para com o presente termo, o Titular consente e concorda que a <strong>ANNA PAULA MAX SERVICE LTDA, CNPJ: 43.910.837/0001-80</strong>, doravante denominada Controladora, tome decisões referentes ao tratamento de seus dados pessoais almejando qualquer processo que envolva recrutamento e seleção.<br><br>
+        <strong>Segurança dos Dados:</strong> A Controladora responsabiliza-se pela manutenção de medidas de segurança aptas a proteger os dados pessoais de acessos não autorizados.
+      </div>
+
+      <div class="form-group">
+        <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; cursor: pointer;">
+          <input type="checkbox" id="termo_aceite" name="termo_aceite" value="1" required style="width: 22px; height: 22px; margin-top: 2px; flex-shrink: 0;">
+          <span>Declaro que li, compreendi e concordo integralmente com os termos de consentimento para tratamento de dados e veracidade das informações prestadas.</span>
+        </label>
+      </div>
+
+      <div class="form-group" style="margin-top: 20px;">
+        <label class="form-label">Assinatura do Candidato na Tela <span class="required">*</span></label>
+        <span class="input-hint" style="margin-bottom: 8px;">Assine com o dedo ou caneta touch no espaço abaixo:</span>
+        <div class="signature-box">
+          <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+        </div>
+        <div class="signature-actions">
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Trace sua rubrica no quadro acima</span>
+          <button type="button" id="btnClearSign" class="btn btn-outline" style="padding: 6px 14px; font-size: 0.85rem;">Limpar Assinatura</button>
+        </div>
+        <input type="hidden" id="assinatura_digital" name="assinatura_digital">
+      </div>
+    </div>
+
+    <!-- Barra de Navegação Inferior Fixa -->
+    <div class="mobile-footer">
+      <button type="button" id="btnPrev" class="btn btn-outline" style="display: none;">Voltar</button>
+      <button type="button" id="btnNext" class="btn btn-primary">Avançar</button>
+      <button type="submit" id="btnSubmit" class="btn btn-success" style="display: none;">Finalizar e Enviar Ficha</button>
+    </div>
+
+  </form>
+</div>
+
+<script src="{{ url_for('static', filename='js/mobile-form.js') }}"></script>
+</body>
+</html>

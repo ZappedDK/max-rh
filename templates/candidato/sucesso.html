@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidatura Enviada com Sucesso - MAX</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-form.css') }}">
+  <script>
+    const saved = localStorage.getItem('app_theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  </script>
+</head>
+<body>
+
+<div class="mobile-app-wrapper" style="justify-content: center; align-items: center; text-align: center; padding: 40px 20px;">
+  
+  <div style="margin-bottom: 25px;">
+    {% if tem_logo %}
+      <img src="{{ url_for('static', filename='img/logo.png', v=logo_version) }}" alt="MAX" style="height: 48px; width: auto; max-height: 52px; object-fit: contain; background: #ffffff; border-radius: 8px; padding: 3px; display: inline-block; box-sizing: border-box; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+    {% endif %}
+  </div>
+
+  <div style="width: 75px; height: 75px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+    <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  </div>
+
+  <h1 style="font-size: 1.45rem; color: var(--text-primary); margin-bottom: 8px; font-weight: 700;">Ficha Enviada com Sucesso!</h1>
+  <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 24px;">Recebemos seus dados para o processo seletivo.</p>
+
+  <div style="background: var(--box-bloco-bg); border: 1.5px dashed var(--border-color); border-radius: 12px; padding: 20px; width: 100%; max-width: 420px; margin-bottom: 24px; text-align: left;">
+    <div style="margin-bottom: 12px;">
+      <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block;">Número de Protocolo</span>
+      <strong style="font-size: 1.25rem; color: #2563eb;">{{ candidato.protocolo }}</strong>
+    </div>
+
+    <div style="margin-bottom: 8px;">
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Candidato</span>
+      <strong style="color: var(--text-primary);">{{ candidato.nome_completo }}</strong>
+    </div>
+
+    <div style="margin-bottom: 8px;">
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Cargo Pretendido</span>
+      <strong style="color: var(--text-primary);">{{ candidato.cargo_pretendido }}</strong>
+    </div>
+
+    <div>
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Unidade Escolhida</span>
+      <strong style="color: var(--text-primary);">{{ candidato.loja_proxima }}</strong>
+    </div>
+  </div>
+
+  <div style="background: rgba(37, 99, 235, 0.1); border-left: 4px solid #2563eb; padding: 14px; border-radius: 6px; text-align: left; max-width: 420px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 30px; display: flex; gap: 10px; align-items: flex-start;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+    <div>
+      <strong>Próximos passos:</strong> Suas informações foram arquivadas com segurança. Caso seu perfil seja selecionado para a vaga, nossa equipe de Recursos Humanos entrará em contato em até 15 dias úteis. Guarde seu número de protocolo.
+    </div>
+  </div>
+
+  <p style="font-size: 0.8rem; color: var(--text-muted);">MAX Supermercados • Confirmação de Cadastro</p>
+</div>
+
+</body>
+</html>

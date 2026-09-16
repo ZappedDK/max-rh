@@ -1,0 +1,8 @@
+﻿Flask
+Flask-SQLAlchemy
+Flask-Login
+python-dotenv
+Werkzeug
+pymysql
+segno
+requests

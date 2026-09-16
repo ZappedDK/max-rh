@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-admin-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Portal RH - Max Supermercados{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    const savedAdminTheme = localStorage.getItem('admin_theme') || 'light';
+    document.documentElement.setAttribute('data-admin-theme', savedAdminTheme);
+  </script>
+  <style>
+    /* Estilos adicionais para tabelas e cards no painel */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--admin-card-bg);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--admin-border);
+      border-left: 5px solid var(--primary);
+      transition: background-color 0.3s;
+    }
+    .stat-card.pendente { border-left-color: #f59e0b; }
+    .stat-card.em_analise { border-left-color: #3b82f6; }
+    .stat-card.contratar { border-left-color: #10b981; }
+    .stat-card.nao_contratar { border-left-color: #ef4444; }
+    .stat-card.banco_talentos { border-left-color: #a855f7; }
+    
+    .stat-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--admin-text-primary);
+      line-height: 1.2;
+    }
+    .stat-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--admin-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .data-table-container {
+      background: var(--admin-card-bg);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--admin-border);
+      overflow-x: auto;
+      transition: background-color 0.3s;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    table.data-table th {
+      background: var(--table-header-bg);
+      padding: 14px 18px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--admin-text-muted);
+      border-bottom: 1px solid var(--admin-border);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    table.data-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--admin-border);
+      font-size: 0.92rem;
+      color: var(--admin-text-secondary);
+    }
+    table.data-table tr:hover {
+      background: var(--table-row-hover);
+    }
+    .card-box {
+      background: var(--admin-card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid var(--admin-border);
+      box-shadow: var(--card-shadow);
+      transition: background-color 0.3s;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div class="admin-wrapper">
+  
+  <!-- SIDEBAR LATERAL ESQUERDA -->
+  <aside class="admin-sidebar no-print">
+    <!-- Logotipo Corporativo em destaque (Grande Acima do Nome) -->
+    <a href="{{ url_for('admin_dashboard') }}" class="sidebar-brand">
+      {% if tem_logo %}
+        <img src="{{ url_for('static', filename='img/logo.png', v=logo_version) }}" alt="MAX Supermercados" class="sidebar-logo-img">
+      {% else %}
+        <span class="brand-badge-max">MAX</span>
+      {% endif %}
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-title">Portal RH</span>
+        <span class="sidebar-brand-subtitle">Recrutamento & Seleção</span>
+      </div>
+    </a>
+
+    <!-- Menu de Navegação -->
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'admin_dashboard' or request.endpoint == 'admin_candidato_detalhe' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Candidatos</span>
+      </a>
+
+      <a href="{{ url_for('admin_qrcode') }}" class="sidebar-nav-item {% if request.endpoint == 'admin_qrcode' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+          <line x1="7" y1="7" x2="7" y2="7.01"></line>
+          <line x1="17" y1="7" x2="17" y2="7.01"></line>
+          <line x1="7" y1="17" x2="7" y2="17.01"></line>
+          <line x1="17" y1="17" x2="17" y2="17.01"></line>
+        </svg>
+        <span>QR Code & Vaga</span>
+      </a>
+
+      {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('admin_usuarios') }}" class="sidebar-nav-item {% if request.endpoint == 'admin_usuarios' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+          <span>Usuários</span>
+        </a>
+
+        <a href="{{ url_for('admin_configuracoes') }}" class="sidebar-nav-item {% if request.endpoint == 'admin_configuracoes' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Configurações & Logo</span>
+        </a>
+      {% endif %}
+
+      <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--sidebar-border);">
+        <a href="{{ url_for('candidatura') }}" target="_blank" class="sidebar-nav-item" style="font-size: 0.88rem; opacity: 0.85;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span>Abrir Ficha Mobile</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Rodapé da Sidebar: Tema e Perfil -->
+    <div class="sidebar-footer">
+      <!-- Botão Alternador de Tema Escuro / Claro -->
+      <button type="button" id="adminThemeToggle" class="theme-toggle-admin" title="Alternar tema visual">
+        <span id="adminThemeLabel">Modo Escuro</span>
+        <span id="adminThemeIcon" style="display: inline-flex; align-items: center;">
+          <svg id="svgThemeMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg id="svgThemeSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; display: none;">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </span>
+      </button>
+
+      <!-- Informações do Usuário Logado -->
+      <div class="user-profile-card">
+        <div class="user-profile-info">
+          <span class="user-profile-name" title="{{ current_user.nome }}">{{ current_user.nome }}</span>
+          <span class="user-profile-role">{{ current_user.role }}</span>
+        </div>
+        <a href="{{ url_for('admin_logout') }}" title="Sair do Sistema" style="color: #fca5a5; text-decoration: none; display: inline-flex; align-items: center; padding: 6px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'" onmouseout="this.style.background='transparent'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ÁREA DE CONTEÚDO PRINCIPAL (DIREITA) -->
+  <div class="admin-content-area">
+    
+    <!-- Alertas Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert-container no-print">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main class="admin-main">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="no-print" style="padding: 16px 30px; text-align: center; font-size: 0.85rem; color: var(--admin-text-muted); border-top: 1px solid var(--admin-border);">
+      MAX Supermercados • Sistema de Gestão de Colaboradores & Recrutamento
+    </footer>
+  </div>
+
+</div>
+
+<script>
+  // Lógica de alternar tema no Painel Admin
+  const adminThemeToggle = document.getElementById('adminThemeToggle');
+  const adminThemeLabel = document.getElementById('adminThemeLabel');
+  const svgThemeMoon = document.getElementById('svgThemeMoon');
+  const svgThemeSun = document.getElementById('svgThemeSun');
+
+  function updateAdminThemeUI(theme) {
+    document.documentElement.setAttribute('data-admin-theme', theme);
+    localStorage.setItem('admin_theme', theme);
+    if (theme === 'dark') {
+      if (adminThemeLabel) adminThemeLabel.textContent = 'Modo Claro';
+      if (svgThemeMoon) svgThemeMoon.style.display = 'none';
+      if (svgThemeSun) svgThemeSun.style.display = 'block';
+    } else {
+      if (adminThemeLabel) adminThemeLabel.textContent = 'Modo Escuro';
+      if (svgThemeMoon) svgThemeMoon.style.display = 'block';
+      if (svgThemeSun) svgThemeSun.style.display = 'none';
+    }
+  }
+
+  const currentSavedTheme = localStorage.getItem('admin_theme') || 'light';
+  updateAdminThemeUI(currentSavedTheme);
+
+  if (adminThemeToggle) {
+    adminThemeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-admin-theme') || 'light';
+      updateAdminThemeUI(current === 'dark' ? 'light' : 'dark');
+    });
+  }
+</script>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

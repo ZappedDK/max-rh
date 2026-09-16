@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login RH - Max Supermercados</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #0a2558 100%);
+      padding: 20px;
+    }
+    .login-card {
+      background: white;
+      border-radius: 14px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .login-header .logos {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #0d47a1;
+      box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.15);
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logos">
+        {% if tem_logo %}
+          <img src="{{ url_for('static', filename='img/logo.png', v=logo_version) }}" alt="Logo Max" style="max-height: 55px; max-width: 220px; object-fit: contain;">
+        {% else %}
+          <span class="brand-badge-max" style="font-size: 1.4rem; padding: 6px 18px; border: 2px solid #0d47a1;">MAX</span>
+        {% endif %}
+      </div>
+      <h2 style="font-size: 1.3rem; color: #1e293b; margin-top: 8px; font-weight: 700;">Portal de Recrutamento RH</h2>
+      <p style="font-size: 0.85rem; color: #64748b;">Acesso restrito à equipe interna</p>
+    </div>
+
+    <!-- Mensagens Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('admin_login') }}">
+      <div class="form-group">
+        <label class="form-label" for="username">Usuário</label>
+        <input type="text" id="username" name="username" class="form-control" placeholder="Digite seu usuário" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Senha</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Digite sua senha" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; margin-top: 10px; border-radius: 8px;">
+        Entrar no Sistema
+      </button>
+    </form>
+
+    <div style="margin-top: 25px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+      <small style="color: #94a3b8;">Acesso padrão: <strong>admin</strong> / <strong>admin123</strong></small>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,421 @@
+/* ==========================================
+   VARIÁVEIS DE TEMA (CLARO / ESCURO)
+   ========================================== */
+:root, [data-theme="light"] {
+  --app-bg: #f1f5f9;
+  --card-bg: #ffffff;
+  --header-bg: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  --header-text: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --border-focus: #2563eb;
+  --input-bg: #ffffff;
+  --input-text: #0f172a;
+  --radio-card-bg: #f8fafc;
+  --radio-card-border: #e2e8f0;
+  --radio-card-selected-bg: #eff6ff;
+  --radio-card-selected-border: #2563eb;
+  --radio-card-selected-text: #1d4ed8;
+  --progress-track: #e2e8f0;
+  --progress-fill: linear-gradient(90deg, #2563eb 0%, #0284c7 100%);
+  --box-bloco-bg: #f8fafc;
+  --box-bloco-border: #e2e8f0;
+  --footer-bg: #ffffff;
+  --footer-border: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
+  --theme-toggle-bg: rgba(255,255,255,0.2);
+  --theme-toggle-color: #ffffff;
+}
+
+[data-theme="dark"] {
+  --app-bg: #090d16;
+  --card-bg: #111827;
+  --header-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --header-text: #f8fafc;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --border-focus: #38bdf8;
+  --input-bg: #1e293b;
+  --input-text: #f8fafc;
+  --radio-card-bg: #1e293b;
+  --radio-card-border: #334155;
+  --radio-card-selected-bg: #0c4a6e;
+  --radio-card-selected-border: #38bdf8;
+  --radio-card-selected-text: #38bdf8;
+  --progress-track: #1e293b;
+  --progress-fill: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%);
+  --box-bloco-bg: #1a2234;
+  --box-bloco-border: #334155;
+  --footer-bg: #111827;
+  --footer-border: #1f2937;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 14px rgba(0,0,0,0.4);
+  --theme-toggle-bg: rgba(255,255,255,0.1);
+  --theme-toggle-color: #f8fafc;
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.mobile-app-wrapper {
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+  transition: background-color 0.3s ease;
+}
+
+/* Header Neutro e Profissional (Sem nome da empresa) */
+.mobile-header {
+  background: var(--header-bg);
+  color: var(--header-text);
+  padding: 18px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-brand-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  width: 38px;
+  height: 38px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.header-logo-img {
+  height: 34px;
+  width: auto;
+  max-height: 38px;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 2px;
+  display: block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.header-titles h1 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-titles p {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  margin: 2px 0 0 0;
+}
+
+/* Botão de Alternar Tema (Dark/Light) */
+.theme-toggle-btn {
+  background: var(--theme-toggle-bg);
+  color: var(--theme-toggle-color);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.theme-toggle-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Barra de Progresso */
+.progress-container {
+  padding: 14px 20px 10px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.progress-track {
+  height: 7px;
+  background: var(--progress-track);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 16.66%;
+  background: var(--progress-fill);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 999px;
+}
+
+/* Conteúdo */
+.form-content {
+  padding: 22px 20px 30px;
+  flex: 1;
+}
+
+.step-panel {
+  display: none;
+  animation: slideFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.step-panel.active {
+  display: block;
+}
+
+@keyframes slideFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-title-box {
+  margin-bottom: 22px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.step-title-box h2 {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-title-box p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Inputs & Labels */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-label .required {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 9px;
+  font-size: 0.98rem;
+  color: var(--input-text);
+  background-color: var(--input-bg);
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s;
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  min-height: 85px;
+  resize: vertical;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+
+.form-input.is-invalid {
+  border-color: #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.form-input.is-valid {
+  border-color: #10b981 !important;
+}
+
+.input-hint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: block;
+}
+
+.input-error {
+  font-size: 0.8rem;
+  color: #ef4444;
+  margin-top: 4px;
+  display: none;
+  font-weight: 600;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 440px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Radio Cards Modernos */
+.radio-group-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.radio-card {
+  border: 1.5px solid var(--radio-card-border);
+  border-radius: 9px;
+  padding: 12px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 0.88rem;
+  user-select: none;
+  background: var(--radio-card-bg);
+  color: var(--text-secondary);
+}
+
+.radio-card input[type="radio"] {
+  display: none;
+}
+
+.radio-card.selected, .radio-card:has(input:checked) {
+  border-color: var(--radio-card-selected-border);
+  background: var(--radio-card-selected-bg);
+  color: var(--radio-card-selected-text);
+  box-shadow: 0 0 0 1px var(--radio-card-selected-border);
+}
+
+/* Blocos de Experiência */
+.card-bloco {
+  background: var(--box-bloco-bg);
+  border: 1px solid var(--box-bloco-border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: background-color 0.3s;
+}
+
+.card-bloco-header {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+}
+
+/* Assinatura Touch (sempre papel nítido de alta fidelidade) */
+.signature-box {
+  background: #ffffff;
+  border: 2px dashed #64748b;
+  border-radius: 10px;
+  position: relative;
+  margin-bottom: 10px;
+  touch-action: none;
+  overflow: hidden;
+}
+
+.signature-canvas {
+  width: 100%;
+  height: 180px;
+  display: block;
+  cursor: crosshair;
+  background: #ffffff;
+}
+
+.signature-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+/* LGPD Container */
+.lgpd-box {
+  background: var(--box-bloco-bg);
+  border: 1px solid var(--box-bloco-border);
+  border-radius: 9px;
+  padding: 14px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  max-height: 150px;
+  overflow-y: auto;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+/* Footer Fixo */
+.mobile-footer {
+  padding: 16px 20px;
+  background: var(--footer-bg);
+  border-top: 1px solid var(--footer-border);
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 12px;
+  z-index: 40;
+  box-shadow: 0 -3px 12px rgba(0,0,0,0.06);
+  transition: background-color 0.3s;
+}
+
+.mobile-footer .btn {
+  flex: 1;
+  min-height: 48px;
+  font-size: 0.98rem;
+  border-radius: 9px;
+}

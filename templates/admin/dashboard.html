@@ -1,0 +1,222 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Banco de Candidatos - MAX RH{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <h1 style="font-size: 1.6rem; color: var(--admin-text-primary); font-weight: 700;">Banco de Candidatos & Fichas</h1>
+    <p style="color: var(--admin-text-muted); font-size: 0.95rem; margin-top: 4px;">Gerencie as candidaturas recebidas através do QR Code</p>
+  </div>
+  <div>
+    <a href="{{ url_for('admin_qrcode') }}" class="btn btn-secondary">
+      Ver QR Code & Cartaz
+    </a>
+  </div>
+</div>
+
+<!-- Cards de Métricas Rápidas -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total de Fichas</div>
+    <div class="stat-value">{{ metricas.total }}</div>
+  </div>
+  <div class="stat-card pendente">
+    <div class="stat-label">Pendentes</div>
+    <div class="stat-value" style="color: #f59e0b;">{{ metricas.pendente }}</div>
+  </div>
+  <div class="stat-card em_analise">
+    <div class="stat-label">Em Análise</div>
+    <div class="stat-value" style="color: #3b82f6;">{{ metricas.em_analise }}</div>
+  </div>
+  <div class="stat-card contratar">
+    <div class="stat-label">Contratar</div>
+    <div class="stat-value" style="color: #10b981;">{{ metricas.contratar }}</div>
+  </div>
+  <div class="stat-card nao_contratar">
+    <div class="stat-label">Não Contratar</div>
+    <div class="stat-value" style="color: #ef4444;">{{ metricas.nao_contratar }}</div>
+  </div>
+  <div class="stat-card banco_talentos">
+    <div class="stat-label">Banco de Talentos</div>
+    <div class="stat-value" style="color: #a855f7;">{{ metricas.banco_talentos }}</div>
+  </div>
+</div>
+
+<!-- Filtros e Busca Modernos -->
+<div class="filter-toolbar">
+  <form method="GET" action="{{ url_for('admin_dashboard') }}" class="filter-form">
+    
+    <!-- Busca por Nome / CPF / Protocolo -->
+    <div class="filter-group flex-grow-2">
+      <label class="filter-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        Buscar Candidato
+      </label>
+      <div class="filter-control-wrapper">
+        <svg class="filter-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" name="q" value="{{ busca_atual }}" class="filter-input" placeholder="Nome, CPF ou Protocolo...">
+      </div>
+    </div>
+
+    <!-- Filtrar por Unidade -->
+    <div class="filter-group flex-grow-1">
+      <label class="filter-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"></path>
+          <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path>
+          <line x1="9" y1="9" x2="9" y2="9.01"></line>
+          <line x1="15" y1="9" x2="15" y2="9.01"></line>
+        </svg>
+        Unidade / Loja
+      </label>
+      <div class="filter-control-wrapper">
+        <svg class="filter-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        <select name="loja" class="filter-select">
+          <option value="">Todas as unidades</option>
+          {% for l in lojas_disponiveis %}
+            <option value="{{ l }}" {% if loja_atual == l %}selected{% endif %}>{{ l }}</option>
+          {% endfor %}
+        </select>
+        <svg class="filter-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Filtrar por Status -->
+    <div class="filter-group flex-grow-1">
+      <label class="filter-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+        </svg>
+        Status da Vaga
+      </label>
+      <div class="filter-control-wrapper">
+        <svg class="filter-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <select name="status" class="filter-select">
+          <option value="">Todos os status</option>
+          <option value="pendente" {% if status_atual == 'pendente' %}selected{% endif %}>Pendente</option>
+          <option value="em_analise" {% if status_atual == 'em_analise' %}selected{% endif %}>Em Análise</option>
+          <option value="contratar" {% if status_atual == 'contratar' %}selected{% endif %}>Contratar</option>
+          <option value="nao_contratar" {% if status_atual == 'nao_contratar' %}selected{% endif %}>Não Contratar</option>
+          <option value="banco_talentos" {% if status_atual == 'banco_talentos' %}selected{% endif %}>Banco de Talentos</option>
+        </select>
+        <svg class="filter-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Ações: Filtrar e Limpar -->
+    <div class="filter-actions">
+      <button type="submit" class="filter-btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        Filtrar
+      </button>
+      {% if busca_atual or loja_atual or status_atual %}
+        <a href="{{ url_for('admin_dashboard') }}" class="filter-btn btn-outline" title="Limpar todos os filtros">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          Limpar
+        </a>
+      {% endif %}
+    </div>
+
+  </form>
+</div>
+
+<!-- Tabela de Candidatos -->
+<div class="data-table-container">
+  {% if candidatos %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Protocolo</th>
+          <th>Candidato</th>
+          <th>Cargo Pretendido</th>
+          <th>Unidade</th>
+          <th>Celular</th>
+          <th>Status</th>
+          <th style="text-align: right;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in candidatos %}
+          <tr>
+            <td style="white-space: nowrap; font-size: 0.82rem; color: var(--admin-text-muted);">
+              {{ c.data_cadastro.strftime('%d/%m/%Y %H:%M') }}
+            </td>
+            <td>
+              <strong style="color: #2563eb; font-size: 0.85rem;">{{ c.protocolo }}</strong>
+            </td>
+            <td>
+              <div style="font-weight: 600; color: var(--admin-text-primary);">{{ c.nome_completo }}</div>
+              <small style="color: var(--admin-text-muted);">CPF: {{ c.cpf }}</small>
+            </td>
+            <td>{{ c.cargo_pretendido }}</td>
+            <td style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ c.loja_proxima }}">
+              {{ c.loja_proxima }}
+            </td>
+            <td>
+              <a href="https://api.whatsapp.com/send?phone=55{{ c.celular|replace('(', '')|replace(')', '')|replace(' ', '')|replace('-', '') }}" target="_blank" style="color: #10b981; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; color: #10b981;">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                <span>{{ c.celular }}</span>
+              </a>
+            </td>
+            <td>
+              <span class="status-badge status-{{ c.status }}">
+                {{ c.status|replace('_', ' ') }}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <a href="{{ url_for('admin_candidato_detalhe', id=c.id) }}" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.82rem;">
+                Ver Ficha
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div style="text-align: center; padding: 60px 20px; color: var(--admin-text-muted);">
+      <div style="margin-bottom: 14px; display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: var(--admin-bg);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 32px; height: 32px; color: var(--admin-text-muted);">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </div>
+      <h3 style="color: var(--admin-text-primary); margin-bottom: 6px;">Nenhum candidato encontrado</h3>
+      <p style="font-size: 0.9rem; max-width: 450px; margin: 0 auto 20px;">
+        {% if busca_atual or loja_atual or status_atual %}
+          Nenhum registro corresponde aos filtros selecionados.
+        {% else %}
+          Ainda não há nenhuma ficha cadastrada. Disponibilize o QR Code para os candidatos!
+        {% endif %}
+      </p>
+      <a href="{{ url_for('admin_qrcode') }}" class="btn btn-primary">Visualizar e Imprimir QR Code</a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

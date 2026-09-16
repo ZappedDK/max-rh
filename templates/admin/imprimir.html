@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Ficha de Emprego - {{ candidato.nome_completo }} ({{ candidato.protocolo }})</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 10mm;
+    }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      color: #000;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+    }
+    .print-actions {
+      text-align: right;
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #f1f5f9;
+      border-radius: 6px;
+    }
+    .btn-print {
+      background: #0d47a1;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    @media print {
+      .print-actions { display: none; }
+      body { margin: 0; font-size: 10px; }
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .section-header {
+      background-color: #eee;
+      font-weight: bold;
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .header-table td {
+      border: 2px solid #000;
+    }
+    .logo-box {
+      text-align: center;
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .title-box {
+      text-align: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="print-actions">
+  <button onclick="window.print()" class="btn-print" style="display: inline-flex; align-items: center; gap: 6px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+      <polyline points="6 9 6 2 18 2 18 9"></polyline>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+      <rect width="12" height="8" x="6" y="14"></rect>
+    </svg>
+    Imprimir Ficha / Salvar PDF
+  </button>
+  <button onclick="window.close()" style="padding: 8px 14px; cursor: pointer; border-radius: 6px; border: 1px solid #cbd5e1; background: white;">Fechar</button>
+</div>
+
+<!-- Cabeçalho Oficial -->
+<table class="header-table">
+  <tr>
+    <td style="width: 25%; text-align: center; vertical-align: middle;">
+      {% if tem_logo %}
+        <img src="{{ url_for('static', filename='img/logo.png', v=logo_version) }}" alt="Logo" style="max-height: 45px; max-width: 130px; object-fit: contain;">
+      {% else %}
+        <div style="font-weight: 900; font-size: 20px; letter-spacing: 2px;">MAX</div>
+      {% endif %}
+    </td>
+    <td style="width: 75%;" class="title-box">
+      FICHA DE CADASTRO E SOLICITAÇÃO DE EMPREGO
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><strong>Cargo Pretendido:</strong> {{ candidato.cargo_pretendido }}</td>
+    <td><strong>Pretensão Salarial:</strong> {{ candidato.pretensao_salarial or '-' }}</td>
+    <td><strong>Data Cadastro:</strong> {{ candidato.data_cadastro.strftime('%d/%m/%Y') }}</td>
+  </tr>
+  <tr>
+    <td colspan="3">
+      <strong>Unidade de Escolha:</strong> {{ candidato.loja_proxima }}
+      <span style="float: right;"><strong>Protocolo:</strong> {{ candidato.protocolo }} | <strong>Status:</strong> {{ candidato.status|upper }}</span>
+    </td>
+  </tr>
+</table>
+
+<!-- 1. DADOS DO CANDIDATO -->
+<table>
+  <tr>
+    <td colspan="4" class="section-header">1. DADOS DO CANDIDATO</td>
+  </tr>
+  <tr>
+    <td colspan="3"><strong>NOME COMPLETO:</strong> {{ candidato.nome_completo }}</td>
+    <td style="width: 15%;"><strong>Idade:</strong> {{ candidato.idade or '-' }}</td>
+  </tr>
+  <tr>
+    <td style="width: 25%;"><strong>Sexo:</strong> {{ candidato.sexo or '-' }}</td>
+    <td style="width: 25%;"><strong>Data de Nascimento:</strong> {{ candidato.data_nascimento }}</td>
+    <td colspan="2"><strong>Cidade e Estado de Nascimento:</strong> {{ candidato.cidade_nascimento or '-' }} / {{ candidato.estado_nascimento or '-' }}</td>
+  </tr>
+  <tr>
+    <td colspan="2"><strong>Endereço:</strong> {{ candidato.endereco or '-' }}</td>
+    <td><strong>Nº:</strong> {{ candidato.numero or 'S/N' }}</td>
+    <td><strong>Complemento:</strong> {{ candidato.complemento or '-' }}</td>
+  </tr>
+  <tr>
+    <td><strong>Quadra:</strong> {{ candidato.quadra or '-' }} | <strong>Lote:</strong> {{ candidato.lote or '-' }}</td>
+    <td><strong>Bairro:</strong> {{ candidato.bairro or '-' }}</td>
+    <td><strong>Cidade/UF:</strong> {{ candidato.cidade or '-' }}/{{ candidato.uf or '-' }}</td>
+    <td><strong>CEP:</strong> {{ candidato.cep or '-' }}</td>
+  </tr>
+  <tr>
+    <td colspan="2"><strong>Celular:</strong> {{ candidato.celular }}</td>
+    <td colspan="2"><strong>Telefone para Recado:</strong> {{ candidato.telefone_recado or '-' }}</td>
+  </tr>
+  <tr>
+    <td colspan="4"><strong>E-mail:</strong> {{ candidato.email or '-' }}</td>
+  </tr>
+  <tr>
+    <td colspan="4"><strong>Nome da Mãe:</strong> {{ candidato.nome_mae or '-' }}</td>
+  </tr>
+  <tr>
+    <td><strong>Estado Civil:</strong> {{ candidato.estado_civil or '-' }}</td>
+    <td><strong>Companheiro(a):</strong> {{ candidato.companheiro or '-' }}</td>
+    <td><strong>Profissão:</strong> {{ candidato.profissao or '-' }}</td>
+    <td><strong>Possui filhos:</strong> {{ candidato.possui_filhos }} ({{ candidato.qtd_filhos }})</td>
+  </tr>
+</table>
+
+<!-- 2. DOCUMENTOS -->
+<table>
+  <tr>
+    <td colspan="3" class="section-header">2. DOCUMENTOS</td>
+  </tr>
+  <tr>
+    <td><strong>RG:</strong> {{ candidato.rg or '-' }}</td>
+    <td><strong>ÓRGÃO EXPEDIÇÃO:</strong> {{ candidato.orgao_expedicao or '-' }}</td>
+    <td><strong>CPF:</strong> {{ candidato.cpf }}</td>
+  </tr>
+  <tr>
+    <td colspan="3"><strong>PIS-PASEP:</strong> {{ candidato.pis_pasep or '-' }}</td>
+  </tr>
+</table>
+
+<!-- 3. NÍVEL DE INSTRUÇÃO E 4. CARACTERÍSTICAS -->
+<table>
+  <tr>
+    <td style="width: 50%;" class="section-header">3. NÍVEL DE INSTRUÇÃO</td>
+    <td style="width: 50%;" class="section-header">4. CARACTERÍSTICAS</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Grau:</strong> {{ candidato.grau_escolaridade or '-' }}<br>
+      <strong>Situação:</strong> {{ candidato.nivel_ensino or '-' }}<br>
+      <strong>Outros Cursos:</strong> {{ candidato.outros_cursos or 'Nenhum informado' }}
+    </td>
+    <td>
+      <strong>Cor da Pele:</strong> {{ candidato.cor_pele or '-' }}<br>
+      <strong>Deficiente Físico:</strong> {{ candidato.deficiente_fisico }} {% if candidato.deficiente_fisico == 'Sim' %}({{ candidato.deficiente_descricao }}){% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="section-header">5. MEDIDAS</td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <strong>Camisa (P-M-G-GG):</strong> {{ candidato.camisa or '-' }} &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; 
+      <strong>Nº do Calçado:</strong> {{ candidato.calcado or '-' }}
+    </td>
+  </tr>
+</table>
+
+<!-- 6. INFORMAÇÕES PROFISSIONAIS -->
+<table>
+  <tr>
+    <td colspan="4" class="section-header">6. INFORMAÇÕES PROFISSIONAIS</td>
+  </tr>
+  <tr>
+    <th style="width: 25%;">Detalhamento</th>
+    <th style="width: 25%;">Último Emprego</th>
+    <th style="width: 25%;">Penúltimo Emprego</th>
+    <th style="width: 25%;">Antepenúltimo Emprego</th>
+  </tr>
+  {% set exps = candidato.experiencias %}
+  <tr>
+    <td><strong>Nome da Empresa:</strong></td>
+    <td>{{ exps[0].nome_empresa if exps|length > 0 else '-' }}</td>
+    <td>{{ exps[1].nome_empresa if exps|length > 1 else '-' }}</td>
+    <td>{{ exps[2].nome_empresa if exps|length > 2 else '-' }}</td>
+  </tr>
+  <tr>
+    <td><strong>Quanto tempo ficou:</strong></td>
+    <td>{{ exps[0].tempo_empresa if exps|length > 0 else '-' }}</td>
+    <td>{{ exps[1].tempo_empresa if exps|length > 1 else '-' }}</td>
+    <td>{{ exps[2].tempo_empresa if exps|length > 2 else '-' }}</td>
+  </tr>
+  <tr>
+    <td><strong>Qual Função Exercia:</strong></td>
+    <td>{{ exps[0].funcao if exps|length > 0 else '-' }}</td>
+    <td>{{ exps[1].funcao if exps|length > 1 else '-' }}</td>
+    <td>{{ exps[2].funcao if exps|length > 2 else '-' }}</td>
+  </tr>
+  <tr>
+    <td><strong>Motivo de Saída:</strong></td>
+    <td>{{ exps[0].motivo_saida if exps|length > 0 else '-' }}</td>
+    <td>{{ exps[1].motivo_saida if exps|length > 1 else '-' }}</td>
+    <td>{{ exps[2].motivo_saida if exps|length > 2 else '-' }}</td>
+  </tr>
+</table>
+
+<!-- 7. SAÚDE -->
+<table>
+  <tr>
+    <td colspan="2" class="section-header">7. SAÚDE</td>
+  </tr>
+  <tr>
+    <td>1. Já teve, ou tem algum problema de saúde?</td>
+    <td><strong>{{ candidato.saude_problema or 'Não' }}</strong></td>
+  </tr>
+  <tr>
+    <td>2. Toma alguma medicação, qual?</td>
+    <td><strong>{{ candidato.saude_medicacao or 'Não' }}</strong></td>
+  </tr>
+  <tr>
+    <td>3. Sofreu algum acidente, como?</td>
+    <td><strong>{{ candidato.saude_acidente or 'Não' }}</strong></td>
+  </tr>
+  <tr>
+    <td>4. Já fez alguma cirurgia, qual?</td>
+    <td><strong>{{ candidato.saude_cirurgia or 'Não' }}</strong></td>
+  </tr>
+  <tr>
+    <td>5. Ficou internado alguma vez, qual motivo?</td>
+    <td><strong>{{ candidato.saude_internado or 'Não' }}</strong></td>
+  </tr>
+  <tr>
+    <td>6. Qual foi o último dia que foi ao médico e qual motivo?</td>
+    <td><strong>{{ candidato.saude_ultimo_medico or '-' }}</strong></td>
+  </tr>
+  <tr>
+    <td>7. Pode pegar peso? <strong>{{ candidato.saude_pegar_peso or 'Sim' }}</strong></td>
+    <td>8. Sente dores na coluna? <strong>{{ candidato.saude_coluna or 'Não' }}</strong></td>
+  </tr>
+</table>
+
+<!-- 8. INFORMAÇÕES COMPLEMENTARES -->
+<table>
+  <tr>
+    <td colspan="2" class="section-header">8. INFORMAÇÕES COMPLEMENTARES</td>
+  </tr>
+  <tr>
+    <td>1. Como tomou conhecimento da vaga?</td>
+    <td><strong>{{ candidato.comp_conhecimento_vaga or '-' }}</strong></td>
+  </tr>
+  <tr>
+    <td>2. Na empresa você tem algum parente/amigo/conhecido?</td>
+    <td><strong>{{ candidato.comp_tem_conhecido }} {% if candidato.comp_nome_conhecido %}(Nome: {{ candidato.comp_nome_conhecido }}){% endif %}</strong></td>
+  </tr>
+  <tr>
+    <td>3. Pode fazer horas extras? <strong>{{ candidato.comp_horas_extras }}</strong></td>
+    <td>4. Finais de semana e feriado: <strong>{{ candidato.comp_finais_semana }}</strong></td>
+  </tr>
+  <tr>
+    <td colspan="2">5. Qual a sua disponibilidade de horário? <strong>{{ candidato.comp_disponibilidade or 'Total' }}</strong></td>
+  </tr>
+</table>
+
+<div style="font-size: 9px; margin: 6px 0; text-align: justify; border: 1px solid #000; padding: 4px;">
+  "Declaro que as informações aqui prestadas são verídicas e pelas quais assumo toda e qualquer responsabilidade, e estou ciente que caso seja aprovado para a próxima etapa do processo seletivo receberei o contato em até 15 dias da presente data."
+  <br>
+  <strong>TERMO DE CONSENTIMENTO DE TRATAMENTO DE DADOS (LGPD):</strong> Aceite registrado sob termos da ANNA PAULA MAX SERVICE LTDA (CNPJ: 43.910.837/0001-80).
+</div>
+
+<!-- Assinatura -->
+<table style="margin-top: 10px;">
+  <tr>
+    <td style="width: 50%; text-align: center; vertical-align: bottom; height: 70px;">
+      Goiânia/GO, {{ candidato.data_cadastro.strftime('%d/%m/%Y') }}<br>
+      <strong>Data do Preenchimento</strong>
+    </td>
+    <td style="width: 50%; text-align: center; vertical-align: middle;">
+      {% if candidato.assinatura_digital %}
+        <img src="{{ candidato.assinatura_digital }}" alt="Assinatura Digital" style="max-height: 50px; display: inline-block;"><br>
+      {% endif %}
+      <div style="border-top: 1px solid #000; margin-top: 5px; padding-top: 2px;">
+        <strong>Assinatura do Candidato: {{ candidato.nome_completo }}</strong><br>
+        <span style="font-size: 8px; color: #555;">Assinado digitalmente via QR Code Mobile • IP: {{ candidato.ip_origem or '127.0.0.1' }}</span>
+      </div>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
