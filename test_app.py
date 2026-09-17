@@ -145,5 +145,72 @@ class SistemaRecrutamentoTestCase(unittest.TestCase):
         self.assertEqual(res_print.status_code, 200)
         self.assertIn('FICHA DE CADASTRO E SOLICITAÇÃO DE EMPREGO'.encode('utf-8'), res_print.data)
 
+    def test_configuracoes_email_e_smtp(self):
+        from email_service import parse_destinatarios, testar_configuracao_smtp
+        
+        # 1. Testar parser de múltiplos destinatários com vírgula, ponto e vírgula e espaços
+        raw = "rh@max.com.br, selecao@max.com.br; gerente.rh@max.com.br   diretoria@max.com.br"
+        dests = parse_destinatarios(raw)
+        self.assertEqual(len(dests), 4)
+        self.assertIn('rh@max.com.br', dests)
+        self.assertIn('selecao@max.com.br', dests)
+        self.assertIn('gerente.rh@max.com.br', dests)
+        self.assertIn('diretoria@max.com.br', dests)
+
+        # 2. Testar validação de dados incompletos
+        sucesso, msg, _ = testar_configuracao_smtp({'smtp_server': '', 'smtp_user': '', 'smtp_password': ''})
+        self.assertFalse(sucesso)
+        self.assertIn('não foi informado', msg)
+
+        # 3. Testar salvamento de configurações SMTP pelo admin
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        res = self.client.post('/admin/configuracoes', data={
+            'action': 'salvar',
+            'email_ativo': '1',
+            'smtp_server': 'smtp.penso.com.br',
+            'smtp_port': '587',
+            'smtp_criptografia': 'tls',
+            'smtp_remetente_nome': 'MAX Supermercados RH',
+            'smtp_user': 'recrutamento@supermercadosmax.com.br',
+            'smtp_password': 'senhatestepenso',
+            'email_destinatario_rh': 'rh@supermercadosmax.com.br, selecao@supermercadosmax.com.br'
+        }, follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('Configurações salvas com sucesso'.encode('utf-8'), res.data)
+
+        # Verificar se os campos foram persistidos no banco
+        from models import Configuracao
+        with app.app_context():
+            cfg_server = Configuracao.query.filter_by(chave='smtp_server').first()
+            self.assertEqual(cfg_server.valor, 'smtp.penso.com.br')
+            cfg_dest = Configuracao.query.filter_by(chave='email_destinatario_rh').first()
+            self.assertIn('selecao@supermercadosmax.com.br', cfg_dest.valor)
+            cfg_cripto = Configuracao.query.filter_by(chave='smtp_criptografia').first()
+            self.assertEqual(cfg_cripto.valor, 'tls')
+
+    def test_download_qrcode_e_imprimir_cartaz(self):
+        # 1. Login admin
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        
+        # 2. Testar download SVG
+        res_svg = self.client.get('/admin/qrcode/download?formato=svg')
+        self.assertEqual(res_svg.status_code, 200)
+        self.assertEqual(res_svg.content_type, 'image/svg+xml; charset=utf-8')
+        self.assertIn('attachment', res_svg.headers.get('Content-Disposition', ''))
+        self.assertIn('qrcode_max_vagas.svg', res_svg.headers.get('Content-Disposition', ''))
+
+        # 3. Testar download PNG
+        res_png = self.client.get('/admin/qrcode/download?formato=png')
+        self.assertEqual(res_png.status_code, 200)
+        self.assertEqual(res_png.content_type, 'image/png')
+        self.assertIn('attachment', res_png.headers.get('Content-Disposition', ''))
+        self.assertIn('qrcode_max_vagas.png', res_png.headers.get('Content-Disposition', ''))
+
+        # 4. Testar página dedicada de impressão de cartaz A4
+        res_cartaz = self.client.get('/admin/cartaz/imprimir')
+        self.assertEqual(res_cartaz.status_code, 200)
+        self.assertIn('TRABALHE CONOSCO'.encode('utf-8'), res_cartaz.data)
+        self.assertIn('MAX SUPERMERCADOS'.encode('utf-8'), res_cartaz.data)
+
 if __name__ == '__main__':
     unittest.main()

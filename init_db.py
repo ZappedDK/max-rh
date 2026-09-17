@@ -1,4 +1,4 @@
-﻿from models import db, User, Configuracao
+from models import db, User, Configuracao
 
 def inicializar_banco(app):
     with app.app_context():
@@ -18,14 +18,16 @@ def inicializar_banco(app):
             db.session.add(admin)
             print("[INIT] Usuário 'admin' criado com sucesso com a senha temporária 'admin123'.")
             
-        # Configurações padrão de E-mail
+        # Configurações padrão de E-mail (Serviço SMTP / Rede MAX)
         configs_padrao = {
             'email_ativo': ('0', 'Habilitar envio de e-mail ao RH (1=Ativo, 0=Desativado)'),
-            'smtp_server': ('smtp.gmail.com', 'Servidor SMTP'),
+            'smtp_server': ('suitesmtp.penso.com.br', 'Servidor de Disparo SMTP'),
             'smtp_port': ('587', 'Porta SMTP (587 TLS ou 465 SSL)'),
-            'smtp_user': ('seuemail@gmail.com', 'Usuário / E-mail de envio'),
-            'smtp_password': ('suasenhadeprograma', 'Senha de aplicativo do e-mail'),
-            'email_destinatario_rh': ('rh@supermercadomax.com.br', 'E-mails de destino do RH (separados por vírgula)')
+            'smtp_criptografia': ('tls', 'Criptografia SMTP (tls ou ssl)'),
+            'smtp_remetente_nome': ('MAX Supermercados RH', 'Nome de exibição do remetente'),
+            'smtp_user': ('recrutamento@redemaxsup.com.br', 'Usuário / E-mail corporativo de envio'),
+            'smtp_password': ('', 'Senha da conta corporativa de e-mail'),
+            'email_destinatario_rh': ('rh@redemaxsup.com.br', 'E-mails de destino do RH')
         }
         
         for chave, (valor, desc) in configs_padrao.items():

@@ -1,7 +1,8 @@
 import os
 import uuid
+import io
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, send_file
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 
@@ -9,7 +10,7 @@ from config import Config
 from models import db, User, Candidato, ExperienciaProfissional, Observacao, Anexo, Configuracao
 from init_db import inicializar_banco
 from utils import validar_cpf, formatar_cpf, limpar_apenas_digitos, gerar_protocolo, gerar_qrcode_svg_data, allowed_file
-from email_service import notificar_rh_novo_candidato
+from email_service import notificar_rh_novo_candidato, testar_configuracao_smtp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -198,8 +199,14 @@ def candidatura():
                 'loja_proxima': novo_candidato.loja_proxima,
                 'cpf': novo_candidato.cpf,
                 'celular': novo_candidato.celular,
-                'email': novo_candidato.email,
-                'grau_escolaridade': novo_candidato.grau_escolaridade
+                'telefone_recado': novo_candidato.telefone_recado or '',
+                'email': novo_candidato.email or 'Não informado',
+                'grau_escolaridade': novo_candidato.grau_escolaridade or '',
+                'cidade': novo_candidato.cidade or '',
+                'bairro': novo_candidato.bairro or '',
+                'disponibilidade_horario': novo_candidato.comp_disponibilidade or 'Geral',
+                'pcd': novo_candidato.deficiente_fisico or 'Não',
+                'data_cadastro': novo_candidato.data_cadastro.strftime('%d/%m/%Y às %H:%M') if novo_candidato.data_cadastro else datetime.now().strftime('%d/%m/%Y às %H:%M')
             }
             app_url = request.host_url.rstrip('/')
             notificar_rh_novo_candidato(app, dados_email, app_url)
@@ -415,6 +422,41 @@ def admin_qrcode():
     qrcode_svg = gerar_qrcode_svg_data(url_candidatura)
     return render_template('admin/qrcode.html', url_candidatura=url_candidatura, qrcode_svg=qrcode_svg)
 
+@app.route('/admin/qrcode/download')
+@login_required
+def admin_qrcode_download():
+    import segno
+    formato = request.args.get('formato', 'svg').lower()
+    url_candidatura = request.host_url.rstrip('/') + url_for('candidatura')
+    qr = segno.make_qr(url_candidatura)
+    buffer = io.BytesIO()
+    
+    if formato == 'png':
+        qr.save(buffer, kind='png', scale=12, border=3)
+        buffer.seek(0)
+        return send_file(
+            buffer,
+            mimetype='image/png',
+            as_attachment=True,
+            download_name='qrcode_max_vagas.png'
+        )
+    else:
+        qr.save(buffer, kind='svg', scale=8, border=2)
+        buffer.seek(0)
+        return send_file(
+            buffer,
+            mimetype='image/svg+xml',
+            as_attachment=True,
+            download_name='qrcode_max_vagas.svg'
+        )
+
+@app.route('/admin/cartaz/imprimir')
+@login_required
+def admin_cartaz_imprimir():
+    url_candidatura = request.host_url.rstrip('/') + url_for('candidatura')
+    qrcode_svg = gerar_qrcode_svg_data(url_candidatura)
+    return render_template('admin/imprimir_cartaz.html', url_candidatura=url_candidatura, qrcode_svg=qrcode_svg)
+
 @app.route('/admin/usuarios', methods=['GET', 'POST'])
 @login_required
 def admin_usuarios():
@@ -504,8 +546,28 @@ def admin_configuracoes():
         flash('Acesso restrito a administradores.', 'danger')
         return redirect(url_for('admin_dashboard'))
         
+    aba_ativa = request.args.get('aba') or 'logo'
+    if aba_ativa == 'destinatarios':
+        aba_ativa = 'smtp'
+    
     if request.method == 'POST':
-        action = request.form.get('action')
+        actions = request.form.getlist('action')
+        if 'testar_email' in actions:
+            action = 'testar_email'
+        elif 'salvar_destinatarios' in actions:
+            action = 'salvar_destinatarios'
+        elif 'salvar_smtp' in actions:
+            action = 'salvar_smtp'
+        elif 'upload_logo' in actions:
+            action = 'upload_logo'
+        elif 'remover_logo' in actions:
+            action = 'remover_logo'
+        else:
+            action = request.form.get('action', '')
+            
+        aba_ativa = request.form.get('aba_ativa') or 'logo'
+        if aba_ativa == 'destinatarios':
+            aba_ativa = 'smtp'
         
         # Upload de Logo PNG
         if action == 'upload_logo':
@@ -530,31 +592,63 @@ def admin_configuracoes():
                     flash('Logotipo corporativo em PNG atualizado com sucesso!', 'success')
                 else:
                     flash('Formato inválido! Envie uma imagem com extensão .png para garantir transparência e nitidez.', 'danger')
-            return redirect(url_for('admin_configuracoes'))
+            return redirect(url_for('admin_configuracoes', aba='logo'))
             
         elif action == 'remover_logo':
             caminho_logo = os.path.join(IMG_FOLDER, 'logo.png')
             if os.path.exists(caminho_logo):
                 os.remove(caminho_logo)
                 flash('Logotipo removido com sucesso.', 'info')
-            return redirect(url_for('admin_configuracoes'))
+            return redirect(url_for('admin_configuracoes', aba='logo'))
 
-        # Configurações de E-mail
-        for chave in ['email_ativo', 'smtp_server', 'smtp_port', 'smtp_user', 'smtp_password', 'email_destinatario_rh']:
-            valor = request.form.get(chave, '').strip()
-            cfg = Configuracao.query.filter_by(chave=chave).first()
+        # Salvar Lista de Destinatários do RH
+        elif action == 'salvar_destinatarios':
+            valor = request.form.get('email_destinatario_rh', '').strip()
+            cfg = Configuracao.query.filter_by(chave='email_destinatario_rh').first()
             if cfg:
                 cfg.valor = valor
             else:
-                cfg = Configuracao(chave=chave, valor=valor)
+                cfg = Configuracao(chave='email_destinatario_rh', valor=valor)
                 db.session.add(cfg)
+            db.session.commit()
+            flash('Configurações de e-mail salvas com sucesso!', 'success')
+            return redirect(url_for('admin_configuracoes', aba='smtp'))
+
+        # Salvar ou Testar Servidor SMTP
+        campos_email = [
+            'email_ativo', 'smtp_server', 'smtp_port', 'smtp_criptografia',
+            'smtp_remetente_nome', 'smtp_user', 'smtp_password', 'email_destinatario_rh'
+        ]
+        novos_valores = {}
+        for chave in campos_email:
+            if chave in request.form:
+                valor = request.form.get(chave, '').strip()
+                novos_valores[chave] = valor
+                cfg = Configuracao.query.filter_by(chave=chave).first()
+                if cfg:
+                    cfg.valor = valor
+                else:
+                    cfg = Configuracao(chave=chave, valor=valor)
+                    db.session.add(cfg)
                 
         db.session.commit()
-        flash('Configurações salvas com sucesso!', 'success')
+
+        if action == 'testar_email':
+            # Busca configs atualizadas completas para o teste
+            todas_cfg = {c.chave: c.valor for c in Configuracao.query.all()}
+            sucesso, msg_teste, dests = testar_configuracao_smtp(todas_cfg)
+            if sucesso:
+                flash(msg_teste, 'success')
+            else:
+                flash(msg_teste, 'danger')
+            return redirect(url_for('admin_configuracoes', aba=aba_ativa))
+        else:
+            flash('Configurações salvas com sucesso!', 'success')
+            return redirect(url_for('admin_configuracoes', aba=aba_ativa))
         
     configs_list = Configuracao.query.all()
     cfg_dict = {c.chave: c.valor for c in configs_list}
-    return render_template('admin/configuracoes.html', configs=cfg_dict)
+    return render_template('admin/configuracoes.html', configs=cfg_dict, aba_ativa=aba_ativa)
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

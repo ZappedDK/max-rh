@@ -902,9 +902,182 @@ body {
 }
 
 @media (max-width: 992px) {
-  .qr-workspace-grid {
+  .qr-workspace-grid,
+  .config-workspace-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================
+   WORKSPACE DE CONFIGURAÇÕES (LARGURA TOTAL)
+   ========================================== */
+.config-page-wrapper {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.config-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+  align-items: start;
+}
+
+.config-smtp-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+  width: 100%;
+  align-items: stretch;
+}
+
+@media (max-width: 992px) {
+  .config-grid-2col,
+  .config-smtp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.config-panel-card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.config-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--admin-border);
+  margin-bottom: 22px;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.config-actions-bar {
+  width: 100%;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: var(--card-shadow);
+  box-sizing: border-box;
+}
+
+.logo-checkerboard-area {
+  background-color: var(--admin-bg);
+  background-image: linear-gradient(45deg, rgba(0, 0, 0, 0.04) 25%, transparent 25%),
+                    linear-gradient(-45deg, rgba(0, 0, 0, 0.04) 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, rgba(0, 0, 0, 0.04) 75%),
+                    linear-gradient(-45deg, transparent 75%, rgba(0, 0, 0, 0.04) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  border: 2px dashed var(--admin-border);
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.destinatarios-pills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.destinatario-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--admin-text-primary);
+  font-weight: 500;
+}
+
+.destinatario-pill svg {
+  color: #2563eb;
+  width: 12px;
+  height: 12px;
+}
+
+/* Gerenciador Interativo de Destinatários */
+.destinatario-add-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.destinatarios-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.destinatario-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  gap: 12px;
+}
+
+.destinatario-row:hover {
+  border-color: var(--primary);
+}
+
+.destinatario-row-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.92rem;
+  color: var(--admin-text-primary);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.destinatario-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 /* ==========================================
@@ -1039,13 +1212,34 @@ body {
 }
 
 @media print {
-  html, body {
+  *, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html,
+  html[data-admin-theme="dark"],
+  html[data-theme="dark"],
+  body,
+  .admin-wrapper,
+  .admin-content-area,
+  .admin-main,
+  .admin-content,
+  .qr-workspace-grid,
+  .qr-preview-stage,
+  #secaoCartazA4,
+  .cartaz-a4-preview-container {
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
     width: 210mm !important;
     height: 297mm !important;
+    max-width: 210mm !important;
     max-height: 297mm !important;
+    border: none !important;
+    box-shadow: none !important;
     overflow: hidden !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -1054,22 +1248,20 @@ body {
   .no-print,
   .admin-sidebar,
   .admin-topbar,
+  .sidebar-nav,
+  .sidebar-footer,
   .dashboard-header,
-  .qr-tab-nav,
+  .tabs-minimal-nav,
+  .qr-stage-header,
+  .qr-side-card,
   #secaoAcessoRapido,
   nav, aside, footer, header {
     display: none !important;
-  }
-
-  .admin-wrapper,
-  .admin-main,
-  .admin-content {
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background: #ffffff !important;
-    box-shadow: none !important;
   }
 
   #secaoCartazA4 {
@@ -1085,7 +1277,7 @@ body {
   }
 
   .cartaz-a4-preview-container {
-    max-width: 100% !important;
+    max-width: 210mm !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 210mm !important;
@@ -1094,14 +1286,16 @@ body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    background: #ffffff !important;
   }
 
   .cartaz-box-a4 {
-    width: 182mm !important;
-    height: 266mm !important;
-    max-height: 266mm !important;
-    margin: 14mm auto !important;
-    padding: 22mm 18mm 16mm !important;
+    width: 186mm !important;
+    height: 270mm !important;
+    max-width: 186mm !important;
+    max-height: 270mm !important;
+    margin: 13mm auto !important;
+    padding: 18mm 16mm 14mm !important;
     box-sizing: border-box !important;
     background: #ffffff !important;
     color: #0f172a !important;

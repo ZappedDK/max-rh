@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cartaz Oficial de Vagas A4 - MAX Supermercados</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 0mm !important;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      background: #0f172a;
+      color: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Barra Superior de Controles na Tela (Oculta na Impressão) */
+    .print-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: #1e293b;
+      color: #ffffff;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 9999;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-action-print {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 9px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .btn-action-print:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-action-close {
+      background: transparent;
+      color: #cbd5e1;
+      border: 1px solid #475569;
+      padding: 8px 18px;
+      font-size: 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-action-close:hover {
+      color: #ffffff;
+      border-color: #94a3b8;
+    }
+
+    /* Container Centralizador na Tela */
+    .screen-stage-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 80px;
+      padding-bottom: 40px;
+    }
+
+    /* Folha A4 Real (210 x 297 mm) */
+    .a4-page-sheet {
+      width: 210mm;
+      height: 297mm;
+      max-width: 210mm;
+      max-height: 297mm;
+      margin: 0 auto;
+      background: #ffffff !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      border-radius: 4px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+
+    /* Moldura Elegante do Cartaz */
+    .cartaz-frame {
+      width: 186mm;
+      height: 270mm;
+      max-width: 186mm;
+      max-height: 270mm;
+      background: #ffffff !important;
+      border: 3.5pt double #0d47a1 !important;
+      border-radius: 14px;
+      padding: 16mm 16mm 14mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .cartaz-logo-container {
+      margin-bottom: 3mm;
+    }
+
+    .cartaz-logo-img {
+      height: 26mm;
+      max-height: 26mm;
+      width: auto;
+      max-width: 80mm;
+      object-fit: contain;
+    }
+
+    .cartaz-logo-fallback {
+      display: inline-block;
+      font-size: 26pt;
+      font-weight: 900;
+      color: #0d47a1;
+      letter-spacing: 2px;
+      padding: 4mm 16mm;
+      border: 2.5pt solid #0d47a1;
+      border-radius: 8px;
+    }
+
+    .cartaz-title {
+      font-size: 29pt;
+      font-weight: 900;
+      color: #0d47a1;
+      margin: 0 0 2mm 0;
+      letter-spacing: 0.5px;
+      line-height: 1.1;
+    }
+
+    .cartaz-subtitle {
+      font-size: 14.5pt;
+      color: #334155;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .cartaz-qr-container {
+      margin: 3mm auto 4mm;
+    }
+
+    .cartaz-qr-box {
+      display: inline-block;
+      padding: 4.5mm;
+      background: #ffffff !important;
+      border: 2.5pt solid #0d47a1;
+      border-radius: 14px;
+    }
+
+    .cartaz-qr-image {
+      width: 60mm;
+      height: 60mm;
+      display: block;
+    }
+
+    .cartaz-instructions {
+      margin-top: 2mm;
+    }
+
+    .cartaz-action-heading {
+      font-size: 16pt;
+      font-weight: 800;
+      color: #0d47a1;
+      margin: 0 0 2mm 0;
+    }
+
+    .cartaz-action-subtext {
+      font-size: 11pt;
+      color: #64748b;
+      margin: 0 0 4mm 0;
+    }
+
+    .cartaz-badge-paperless {
+      display: inline-block;
+      background: #f1f5f9 !important;
+      color: #475569;
+      padding: 3mm 8mm;
+      border-radius: 20px;
+      font-size: 9.5pt;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+    }
+
+    .cartaz-footer {
+      width: 100%;
+      margin-top: 3mm;
+      padding-top: 3mm;
+      border-top: 1pt solid #cbd5e1;
+      font-size: 9pt;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    /* Regras Estritas de Impressão (Folha A4 Completa, Sem Margens do Navegador) */
+    @media print {
+      .print-topbar,
+      .no-print {
+        display: none !important;
+      }
+
+      html, body {
+        width: 210mm !important;
+        height: 297mm !important;
+        max-width: 210mm !important;
+        max-height: 297mm !important;
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+      }
+
+      .screen-stage-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        background: #ffffff !important;
+      }
+
+      .a4-page-sheet {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de Controles Fixa no Topo (Apenas na Tela) -->
+  <div class="print-topbar no-print">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <strong style="font-size: 15px; letter-spacing: 0.5px;">MAX SUPERMERCADOS</strong>
+      <span style="color: #94a3b8; font-size: 13px;">• Cartaz Oficial A4 para Impressão</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button type="button" onclick="window.close(); if(!window.closed) window.location.href='{{ url_for('admin_qrcode') }}';" class="btn-action-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Fechar & Voltar
+      </button>
+      <button type="button" onclick="window.print()" class="btn-action-print">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect width="12" height="8" x="6" y="14"></rect></svg>
+        Imprimir Agora (A4)
+      </button>
+    </div>
+  </div>
+
+  <!-- Área Centralizada na Tela -->
+  <div class="screen-stage-wrapper">
+    <!-- Folha A4 Limpa -->
+    <div class="a4-page-sheet">
+      <div class="cartaz-frame">
+        
+        <!-- Logotipo Oficial -->
+        <div class="cartaz-logo-container">
+          {% if tem_logo %}
+            <img src="{{ url_for('static', filename='img/logo.png', v=logo_version) }}" alt="MAX Supermercados" class="cartaz-logo-img">
+          {% else %}
+            <span class="cartaz-logo-fallback">MAX</span>
+          {% endif %}
+        </div>
+
+        <!-- Título de Chamada -->
+        <div>
+          <h1 class="cartaz-title">TRABALHE CONOSCO!</h1>
+          <p class="cartaz-subtitle">Venha fazer parte da nossa equipe</p>
+        </div>
+
+        <!-- Imagem do QR Code -->
+        <div class="cartaz-qr-container">
+          <div class="cartaz-qr-box">
+            <img src="{{ qrcode_svg }}" alt="QR Code Vagas" class="cartaz-qr-image">
+          </div>
+        </div>
+
+        <!-- Instruções -->
+        <div class="cartaz-instructions">
+          <h2 class="cartaz-action-heading">Aponte a câmera do seu celular</h2>
+          <p class="cartaz-action-subtext">Ficha de cadastro 100% digital, rápida e segura</p>
+          
+          <div class="cartaz-badge-paperless">
+            Não precisa imprimir currículo em papel
+          </div>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="cartaz-footer">
+          MAX Supermercados • Portal de Recrutamento & Seleção
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dispara a impressão automaticamente ao carregar a página
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        window.print();
+      }, 350);
+    });
+  </script>
+
+</body>
+</html>
