@@ -92,9 +92,8 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="pretensao_salarial">Pretensão Salarial</label>
-        <input type="text" id="pretensao_salarial" name="pretensao_salarial" class="form-input" placeholder="R$ 0,00" inputmode="numeric">
-        <span class="input-hint">Opcional</span>
+        <label class="form-label" for="pretensao_salarial">Pretensão Salarial <span class="required">*</span></label>
+        <input type="text" id="pretensao_salarial" name="pretensao_salarial" class="form-input" placeholder="R$ 0,00" inputmode="numeric" required>
       </div>
 
       <div class="form-group">
@@ -144,10 +143,10 @@
       <div class="form-group">
         <label class="form-label">Sexo <span class="required">*</span></label>
         <div class="radio-group-cards">
-          <label class="radio-card">
+          <label class="radio-card radio-card-masculino">
             <input type="radio" name="sexo" value="Masculino" required> Masculino
           </label>
-          <label class="radio-card">
+          <label class="radio-card radio-card-feminino">
             <input type="radio" name="sexo" value="Feminino"> Feminino
           </label>
         </div>
@@ -185,20 +184,20 @@
         <input type="text" id="nome_mae" name="nome_mae" class="form-input apenas-letras" placeholder="Nome completo da sua mãe">
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="estado_civil">Estado Civil</label>
-          <select id="estado_civil" name="estado_civil" class="form-select">
-            <option value="Solteiro">Solteiro(a)</option>
-            <option value="Casado">Casado(a)</option>
-            <option value="Divorciado">Divorciado(a)</option>
-            <option value="Viúvo">Viúvo(a)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="companheiro">Companheiro(a)</label>
-          <input type="text" id="companheiro" name="companheiro" class="form-input apenas-letras" placeholder="Nome se houver">
-        </div>
+      <div class="form-group">
+        <label class="form-label" for="estado_civil">Estado Civil</label>
+        <select id="estado_civil" name="estado_civil" class="form-select">
+          <option value="Solteiro">Solteiro(a)</option>
+          <option value="Casado">Casado(a)</option>
+          <option value="Divorciado">Divorciado(a)</option>
+          <option value="Viúvo">Viúvo(a)</option>
+        </select>
+      </div>
+
+      <div class="form-group conditional-box" id="boxCompanheiro" style="display: none;">
+        <label class="form-label" for="companheiro">Nome do(a) Companheiro(a)</label>
+        <input type="text" id="companheiro" name="companheiro" class="form-input apenas-letras" placeholder="Nome do cônjuge / companheiro(a)">
+        <span class="input-hint">Informe o nome se houver</span>
       </div>
 
       <div class="form-group">
@@ -284,8 +283,8 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="rg">RG</label>
-          <input type="text" id="rg" name="rg" class="form-input" placeholder="Número do RG">
+          <label class="form-label" for="rg">RG <span class="required">*</span></label>
+          <input type="text" id="rg" name="rg" class="form-input" placeholder="Número do RG" required>
         </div>
         <div class="form-group">
           <label class="form-label" for="orgao_expedicao">Órgão Expedição</label>
@@ -358,8 +357,10 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="camisa">Tamanho da Camisa</label>
-          <select id="camisa" name="camisa" class="form-select">
+          <label class="form-label" for="camisa">Tamanho da Camisa <span class="required">*</span></label>
+          <select id="camisa" name="camisa" class="form-select" required>
+            <option value="">Selecione...</option>
+            <option value="PP">PP</option>
             <option value="P">P</option>
             <option value="M" selected>M</option>
             <option value="G">G</option>
@@ -368,8 +369,8 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="calcado">Nº do Calçado</label>
-          <input type="number" id="calcado" name="calcado" class="form-input" placeholder="Ex: 39" min="33" max="50">
+          <label class="form-label" for="calcado">Nº do Calçado <span class="required">*</span></label>
+          <input type="number" id="calcado" name="calcado" class="form-input" placeholder="Ex: 39" min="33" max="50" required>
         </div>
       </div>
     </div>
@@ -380,7 +381,7 @@
     <div class="step-panel" id="step-4">
       <div class="step-title-box">
         <h2>Informações Profissionais</h2>
-        <p>Informe até 3 experiências anteriores (se houver)</p>
+        <p>Informe suas experiências anteriores (se houver)</p>
       </div>
 
       <!-- Emprego 1 -->
@@ -429,28 +430,74 @@
         </div>
       </div>
 
-      <!-- Emprego 3 -->
-      <div class="card-bloco">
-        <div class="card-bloco-header">3. Antepenúltimo Emprego</div>
-        <div class="form-group">
-          <label class="form-label" for="exp_empresa_3">Nome da Empresa</label>
-          <input type="text" id="exp_empresa_3" name="exp_empresa_3" class="form-input" placeholder="Nome da empresa">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="exp_tempo_3">Quanto tempo ficou?</label>
-            <input type="text" id="exp_tempo_3" name="exp_tempo_3" class="form-input" placeholder="Ex: 2 anos">
+      <!-- Experiências Adicionais (Iniciam ocultas) -->
+      <div id="boxMaisExperiencias">
+        <!-- Emprego 3 -->
+        <div class="card-bloco conditional-box" id="boxExp3" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">
+            <span class="card-bloco-header" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">3. Antepenúltimo Emprego</span>
+            <button type="button" class="btn-remove-exp" onclick="removerExperiencia(3)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              Remover
+            </button>
           </div>
           <div class="form-group">
-            <label class="form-label" for="exp_funcao_3">Função exercida</label>
-            <input type="text" id="exp_funcao_3" name="exp_funcao_3" class="form-input" placeholder="Cargo exercido">
+            <label class="form-label" for="exp_empresa_3">Nome da Empresa</label>
+            <input type="text" id="exp_empresa_3" name="exp_empresa_3" class="form-input" placeholder="Nome da empresa">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="exp_tempo_3">Quanto tempo ficou?</label>
+              <input type="text" id="exp_tempo_3" name="exp_tempo_3" class="form-input" placeholder="Ex: 2 anos">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="exp_funcao_3">Função exercida</label>
+              <input type="text" id="exp_funcao_3" name="exp_funcao_3" class="form-input" placeholder="Cargo exercido">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="exp_motivo_3">Motivo da Saída</label>
+            <input type="text" id="exp_motivo_3" name="exp_motivo_3" class="form-input" placeholder="Motivo da saída">
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="exp_motivo_3">Motivo da Saída</label>
-          <input type="text" id="exp_motivo_3" name="exp_motivo_3" class="form-input" placeholder="Motivo da saída">
+
+        <!-- Emprego 4 -->
+        <div class="card-bloco conditional-box" id="boxExp4" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">
+            <span class="card-bloco-header" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">4. Experiência Adicional</span>
+            <button type="button" class="btn-remove-exp" onclick="removerExperiencia(4)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              Remover
+            </button>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="exp_empresa_4">Nome da Empresa</label>
+            <input type="text" id="exp_empresa_4" name="exp_empresa_4" class="form-input" placeholder="Nome da empresa">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="exp_tempo_4">Quanto tempo ficou?</label>
+              <input type="text" id="exp_tempo_4" name="exp_tempo_4" class="form-input" placeholder="Ex: 1 ano">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="exp_funcao_4">Função exercida</label>
+              <input type="text" id="exp_funcao_4" name="exp_funcao_4" class="form-input" placeholder="Cargo exercido">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="exp_motivo_4">Motivo da Saída</label>
+            <input type="text" id="exp_motivo_4" name="exp_motivo_4" class="form-input" placeholder="Motivo da saída">
+          </div>
         </div>
       </div>
+
+      <button type="button" id="btnAddExp" class="btn-add-exp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Adicionar Outra Experiência</span>
+      </button>
     </div>
 
     <!-- ==========================================
@@ -462,29 +509,84 @@
         <p>Informações de aptidão física e rotina de trabalho</p>
       </div>
 
+      <!-- 1. Problema de saúde -->
       <div class="form-group">
-        <label class="form-label" for="saude_problema">1. Já teve, ou tem algum problema de saúde? Se sim, qual?</label>
-        <input type="text" id="saude_problema" name="saude_problema" class="form-input" placeholder="Não / Se sim, descreva">
+        <label class="form-label">1. Já teve, ou tem algum problema de saúde?</label>
+        <div class="radio-group-cards">
+          <label class="radio-card">
+            <input type="radio" name="saude_problema_opcao" value="Não" id="saude_problema_nao" checked> Não
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="saude_problema_opcao" value="Sim" id="saude_problema_sim"> Sim
+          </label>
+        </div>
+        <div class="conditional-box" id="boxSaudeProblemaDesc" style="display: none;">
+          <input type="text" id="saude_problema_desc" name="saude_problema_desc" class="form-input" placeholder="Descreva qual problema de saúde">
+        </div>
       </div>
 
+      <!-- 2. Medicação contínua -->
       <div class="form-group">
-        <label class="form-label" for="saude_medicacao">2. Toma alguma medicação contínua? Qual?</label>
-        <input type="text" id="saude_medicacao" name="saude_medicacao" class="form-input" placeholder="Não / Se sim, qual medicação">
+        <label class="form-label">2. Toma alguma medicação contínua?</label>
+        <div class="radio-group-cards">
+          <label class="radio-card">
+            <input type="radio" name="saude_medicacao_opcao" value="Não" id="saude_medicacao_nao" checked> Não
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="saude_medicacao_opcao" value="Sim" id="saude_medicacao_sim"> Sim
+          </label>
+        </div>
+        <div class="conditional-box" id="boxSaudeMedicacaoDesc" style="display: none;">
+          <input type="text" id="saude_medicacao_desc" name="saude_medicacao_desc" class="form-input" placeholder="Qual medicação toma?">
+        </div>
       </div>
 
+      <!-- 3. Acidente -->
       <div class="form-group">
-        <label class="form-label" for="saude_acidente">3. Sofreu algum acidente? Como?</label>
-        <input type="text" id="saude_acidente" name="saude_acidente" class="form-input" placeholder="Não / Se sim, como ocorreu">
+        <label class="form-label">3. Sofreu algum acidente?</label>
+        <div class="radio-group-cards">
+          <label class="radio-card">
+            <input type="radio" name="saude_acidente_opcao" value="Não" id="saude_acidente_nao" checked> Não
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="saude_acidente_opcao" value="Sim" id="saude_acidente_sim"> Sim
+          </label>
+        </div>
+        <div class="conditional-box" id="boxSaudeAcidenteDesc" style="display: none;">
+          <input type="text" id="saude_acidente_desc" name="saude_acidente_desc" class="form-input" placeholder="Como ocorreu o acidente?">
+        </div>
       </div>
 
+      <!-- 4. Cirurgia -->
       <div class="form-group">
-        <label class="form-label" for="saude_cirurgia">4. Já fez alguma cirurgia? Qual?</label>
-        <input type="text" id="saude_cirurgia" name="saude_cirurgia" class="form-input" placeholder="Não / Se sim, qual cirurgia">
+        <label class="form-label">4. Já fez alguma cirurgia?</label>
+        <div class="radio-group-cards">
+          <label class="radio-card">
+            <input type="radio" name="saude_cirurgia_opcao" value="Não" id="saude_cirurgia_nao" checked> Não
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="saude_cirurgia_opcao" value="Sim" id="saude_cirurgia_sim"> Sim
+          </label>
+        </div>
+        <div class="conditional-box" id="boxSaudeCirurgiaDesc" style="display: none;">
+          <input type="text" id="saude_cirurgia_desc" name="saude_cirurgia_desc" class="form-input" placeholder="Qual cirurgia realizou?">
+        </div>
       </div>
 
+      <!-- 5. Internado -->
       <div class="form-group">
-        <label class="form-label" for="saude_internado">5. Ficou internado alguma vez? Qual motivo?</label>
-        <input type="text" id="saude_internado" name="saude_internado" class="form-input" placeholder="Não / Se sim, motivo">
+        <label class="form-label">5. Ficou internado alguma vez?</label>
+        <div class="radio-group-cards">
+          <label class="radio-card">
+            <input type="radio" name="saude_internado_opcao" value="Não" id="saude_internado_nao" checked> Não
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="saude_internado_opcao" value="Sim" id="saude_internado_sim"> Sim
+          </label>
+        </div>
+        <div class="conditional-box" id="boxSaudeInternadoDesc" style="display: none;">
+          <input type="text" id="saude_internado_desc" name="saude_internado_desc" class="form-input" placeholder="Qual foi o motivo da internação?">
+        </div>
       </div>
 
       <div class="form-group">
@@ -544,9 +646,9 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="comp_nome_conhecido">Nome do parente / conhecido na empresa (se houver):</label>
-        <input type="text" id="comp_nome_conhecido" name="comp_nome_conhecido" class="form-input apenas-letras" placeholder="Nome da pessoa">
+      <div class="form-group conditional-box" id="boxNomeConhecido" style="display: none;">
+        <label class="form-label" for="comp_nome_conhecido">Nome da pessoa na empresa:</label>
+        <input type="text" id="comp_nome_conhecido" name="comp_nome_conhecido" class="form-input apenas-letras" placeholder="Digite o nome completo da pessoa">
       </div>
 
       <div class="form-row">
@@ -575,8 +677,21 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="comp_disponibilidade">Qual a sua disponibilidade de horário?</label>
-        <input type="text" id="comp_disponibilidade" name="comp_disponibilidade" class="form-input" placeholder="Ex: Total, Manhã e Tarde, Noite...">
+        <label class="form-label">Qual a sua disponibilidade de horário?</label>
+        <div class="radio-group-cards" style="grid-template-columns: repeat(2, 1fr);">
+          <label class="radio-card">
+            <input type="radio" name="comp_disponibilidade" value="Todas" checked> Todas (Total)
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="comp_disponibilidade" value="Manhã"> Manhã
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="comp_disponibilidade" value="Tarde"> Tarde
+          </label>
+          <label class="radio-card">
+            <input type="radio" name="comp_disponibilidade" value="Noite"> Noite
+          </label>
+        </div>
       </div>
     </div>
 
@@ -623,9 +738,27 @@
 
     <!-- Barra de Navegação Inferior Fixa -->
     <div class="mobile-footer">
-      <button type="button" id="btnPrev" class="btn btn-outline" style="display: none;">Voltar</button>
-      <button type="button" id="btnNext" class="btn btn-primary">Avançar</button>
-      <button type="submit" id="btnSubmit" class="btn btn-success" style="display: none;">Finalizar e Enviar Ficha</button>
+      <button type="button" id="btnPrev" class="btn btn-outline" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 17px; height: 17px; flex-shrink: 0;">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Voltar</span>
+      </button>
+      <button type="button" id="btnNext" class="btn btn-primary">
+        <span>Avançar</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 17px; height: 17px; flex-shrink: 0;">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+      <button type="submit" id="btnSubmit" class="btn btn-success" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 17px; height: 17px; flex-shrink: 0;">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>Finalizar e Enviar Ficha</span>
+      </button>
     </div>
 
   </form>

@@ -187,7 +187,7 @@
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 16px;">
         <div>
           <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">CPF</span>
-          <strong style="color: #2563eb;">{{ candidato.cpf }}</strong>
+          <strong>{{ candidato.cpf|formatar_cpf }}</strong>
         </div>
         <div>
           <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">RG / Expedição</span>
@@ -301,11 +301,11 @@
           </tr>
           <tr>
             <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">Horas Extras / Finais de Semana:</td>
-            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">Horas extras: {{ candidato.comp_horas_extras }} | FDS/Feriado: {{ candidato.comp_finais_semana }}</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">Horas extras: {{ candidato.comp_horas_extras or '-' }} | FDS/Feriado: {{ candidato.comp_finais_semana or '-' }}</td>
           </tr>
           <tr>
             <td style="padding: 8px 0; color: var(--admin-text-muted); border-bottom: 1px solid var(--admin-border);">Parente/Amigo na Empresa:</td>
-            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.comp_tem_conhecido }} {% if candidato.comp_nome_conhecido %}(Nome: {{ candidato.comp_nome_conhecido }}){% endif %}</td>
+            <td style="padding: 8px 0; font-weight: 600; border-bottom: 1px solid var(--admin-border);">{{ candidato.comp_tem_conhecido or '-' }} {% if candidato.comp_nome_conhecido %}(Nome: {{ candidato.comp_nome_conhecido }}){% endif %}</td>
           </tr>
           <tr>
             <td style="padding: 8px 0; color: var(--admin-text-muted);">Disponibilidade de Horário:</td>

@@ -164,7 +164,7 @@
   <tr>
     <td><strong>RG:</strong> {{ candidato.rg or '-' }}</td>
     <td><strong>ÓRGÃO EXPEDIÇÃO:</strong> {{ candidato.orgao_expedicao or '-' }}</td>
-    <td><strong>CPF:</strong> {{ candidato.cpf }}</td>
+    <td><strong>CPF:</strong> {{ candidato.cpf|formatar_cpf }}</td>
   </tr>
   <tr>
     <td colspan="3"><strong>PIS-PASEP:</strong> {{ candidato.pis_pasep or '-' }}</td>
@@ -283,11 +283,11 @@
   </tr>
   <tr>
     <td>2. Na empresa você tem algum parente/amigo/conhecido?</td>
-    <td><strong>{{ candidato.comp_tem_conhecido }} {% if candidato.comp_nome_conhecido %}(Nome: {{ candidato.comp_nome_conhecido }}){% endif %}</strong></td>
+    <td><strong>{{ candidato.comp_tem_conhecido or '-' }} {% if candidato.comp_nome_conhecido %}(Nome: {{ candidato.comp_nome_conhecido }}){% endif %}</strong></td>
   </tr>
   <tr>
-    <td>3. Pode fazer horas extras? <strong>{{ candidato.comp_horas_extras }}</strong></td>
-    <td>4. Finais de semana e feriado: <strong>{{ candidato.comp_finais_semana }}</strong></td>
+    <td>3. Pode fazer horas extras? <strong>{{ candidato.comp_horas_extras or '-' }}</strong></td>
+    <td>4. Finais de semana e feriado: <strong>{{ candidato.comp_finais_semana or '-' }}</strong></td>
   </tr>
   <tr>
     <td colspan="2">5. Qual a sua disponibilidade de horário? <strong>{{ candidato.comp_disponibilidade or 'Total' }}</strong></td>

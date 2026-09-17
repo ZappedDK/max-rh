@@ -1,3 +1,5 @@
+import os
+os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
 import unittest
 import io
 from app import app, db
@@ -211,6 +213,103 @@ class SistemaRecrutamentoTestCase(unittest.TestCase):
         self.assertEqual(res_cartaz.status_code, 200)
         self.assertIn('TRABALHE CONOSCO'.encode('utf-8'), res_cartaz.data)
         self.assertIn('MAX SUPERMERCADOS'.encode('utf-8'), res_cartaz.data)
+
+    def test_novas_melhorias_ficha_candidato(self):
+        # 1. Testar submissão com novos campos obrigatórios e condicionais
+        payload = {
+            'cargo_pretendido': 'Operadora de Caixa',
+            'pretensao_salarial': 'R$ 1.950,00',
+            'loja_proxima': '1 - Max - Setor Santa Rita',
+            'nome_completo': 'Fernanda Rodrigues Alves',
+            'cpf': '529.982.247-25',
+            'data_nascimento': '20/10/1998',
+            'idade': '28',
+            'sexo': 'Feminino',
+            'estado_civil': 'Casado',
+            'companheiro': 'Lucas Alves',
+            'celular': '(62) 99876-5432',
+            'cep': '74000-000',
+            'rg': '6543210',
+            'orgao_expedicao': 'SSP-GO',
+            'camisa': 'PP',
+            'calcado': '37',
+            'saude_problema_opcao': 'Sim',
+            'saude_problema_desc': 'Rinite alérgica crônica',
+            'saude_medicacao_opcao': 'Não',
+            'saude_acidente_opcao': 'Não',
+            'saude_cirurgia_opcao': 'Não',
+            'saude_internado_opcao': 'Não',
+            'comp_tem_conhecido': 'Parente',
+            'comp_nome_conhecido': 'Tia Cleusa - Açougue',
+            'comp_disponibilidade': 'Manhã',
+            'exp_empresa_1': 'Empresa Alpha',
+            'exp_tempo_1': '1 ano',
+            'exp_funcao_1': 'Caixa',
+            'exp_empresa_2': 'Empresa Beta',
+            'exp_tempo_2': '6 meses',
+            'exp_funcao_2': 'Atendente',
+            'exp_empresa_3': 'Empresa Gama',
+            'exp_tempo_3': '2 anos',
+            'exp_funcao_3': 'Auxiliar',
+            'exp_empresa_4': 'Empresa Delta',
+            'exp_tempo_4': '1 ano',
+            'termo_aceite': '1',
+            'assinatura_digital': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+        }
+
+        # Validar bloqueio caso assinatura venha vazia
+        payload_sem_assinatura = payload.copy()
+        payload_sem_assinatura['assinatura_digital'] = ''
+        res_sem_assinatura = self.client.post('/candidatura', data=payload_sem_assinatura, follow_redirects=True)
+        self.assertIn('A assinatura do candidato na tela é obrigatória'.encode('utf-8'), res_sem_assinatura.data)
+
+        res = self.client.post('/candidatura', data=payload, follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+
+        with app.app_context():
+            cand = Candidato.query.filter_by(cpf='529.982.247-25').first()
+            self.assertIsNotNone(cand)
+            self.assertEqual(cand.pretensao_salarial, 'R$ 1.950,00')
+            self.assertEqual(cand.sexo, 'Feminino')
+            self.assertEqual(cand.estado_civil, 'Casado')
+            self.assertEqual(cand.companheiro, 'LUCAS ALVES')
+            self.assertEqual(cand.rg, '6543210')
+            self.assertEqual(cand.camisa, 'PP')
+            self.assertEqual(cand.calcado, '37')
+            self.assertEqual(cand.saude_problema, 'Sim: Rinite alérgica crônica')
+            self.assertEqual(cand.saude_medicacao, 'Não')
+            self.assertEqual(cand.comp_tem_conhecido, 'Parente')
+            self.assertEqual(cand.comp_nome_conhecido, 'Tia Cleusa - Açougue')
+            self.assertEqual(cand.comp_disponibilidade, 'Manhã')
+            self.assertEqual(len(cand.experiencias), 4)
+
+        # 2. Testar API de validação em tempo real para CPF já cadastrado
+        res_api_dup = self.client.post('/api/validar-cpf', json={'cpf': '529.982.247-25'})
+        data_api = res_api_dup.get_json()
+        self.assertTrue(data_api['existe'])
+        self.assertIn('já possui cadastro', data_api['mensagem'])
+
+        # 3. Testar API com CPF sem formatação
+        res_api_dup_raw = self.client.post('/api/validar-cpf', json={'cpf': '52998224725'})
+        data_api_raw = res_api_dup_raw.get_json()
+        self.assertTrue(data_api_raw['existe'])
+
+        # 4. Testar formato do protocolo novo (MAX-XXXXX com 5 dígitos)
+        import re
+        self.assertTrue(re.match(r'^MAX-[A-Z0-9]{5}$', cand.protocolo))
+
+        # 5. Testar filtro por data no dashboard admin
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        hoje_str = cand.data_cadastro.strftime('%Y-%m-%d')
+        res_filtro_hoje = self.client.get(f'/admin/dashboard?data_de={hoje_str}&data_ate={hoje_str}')
+        self.assertEqual(res_filtro_hoje.status_code, 200)
+        self.assertIn(cand.protocolo.encode('utf-8'), res_filtro_hoje.data)
+
+        # Filtro em data futura (não deve encontrar)
+        res_filtro_futuro = self.client.get('/admin/dashboard?data_de=2099-01-01&data_ate=2099-01-02')
+        self.assertEqual(res_filtro_futuro.status_code, 200)
+        self.assertNotIn(cand.protocolo.encode('utf-8'), res_filtro_futuro.data)
+        self.assertIn('Nenhum registro corresponde aos filtros'.encode('utf-8'), res_filtro_futuro.data)
 
 if __name__ == '__main__':
     unittest.main()

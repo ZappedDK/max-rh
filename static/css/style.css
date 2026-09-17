@@ -326,6 +326,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 .status-pendente { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
 .status-em_analise { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }

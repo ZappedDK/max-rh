@@ -6,6 +6,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 
+from sqlalchemy.exc import IntegrityError
 from config import Config
 from models import db, User, Candidato, ExperienciaProfissional, Observacao, Anexo, Configuracao
 from init_db import inicializar_banco
@@ -61,6 +62,10 @@ def inject_globals():
         ]
     }
 
+@app.template_filter('formatar_cpf')
+def format_cpf_filter(s):
+    return formatar_cpf(s)
+
 # ==========================================
 # ROTAS DO CANDIDATO (MOBILE FIRST)
 # ==========================================
@@ -69,23 +74,41 @@ def inject_globals():
 def index():
     return redirect(url_for('candidatura'))
 
+def processar_campo_saude(opcao, desc, fallback):
+    if opcao == 'Sim':
+        desc_limpa = (desc or '').strip()
+        return f"Sim: {desc_limpa}" if desc_limpa else "Sim"
+    elif opcao == 'Não':
+        return "Não"
+    return (fallback or 'Não').strip()
+
 @app.route('/candidatura', methods=['GET', 'POST'])
 def candidatura():
     if request.method == 'POST':
         cpf_raw = request.form.get('cpf', '').strip()
         cpf_formatado = formatar_cpf(cpf_raw)
+        cpf_digitos = ''.join([c for c in cpf_raw if c.isdigit()])
         
         if not validar_cpf(cpf_raw):
             flash('O CPF informado é inválido. Por favor, revise os dígitos.', 'danger')
             return redirect(url_for('candidatura'))
             
-        candidato_existente = Candidato.query.filter_by(cpf=cpf_formatado).first()
+        candidato_existente = Candidato.query.filter(
+            (Candidato.cpf == cpf_formatado) | (Candidato.cpf == cpf_digitos)
+        ).first()
         if candidato_existente:
             flash(f'Já existe uma ficha cadastrada com o CPF {cpf_formatado} (Protocolo: {candidato_existente.protocolo}). É permitida apenas uma ficha por candidato.', 'warning')
+            return redirect(url_for('candidatura'))
+
+        assinatura_digital = request.form.get('assinatura_digital', '').strip()
+        if not assinatura_digital or not (assinatura_digital.startswith('data:image') or len(assinatura_digital) > 50):
+            flash('A assinatura do candidato na tela é obrigatória antes de enviar a ficha.', 'danger')
             return redirect(url_for('candidatura'))
             
         try:
             protocolo = gerar_protocolo()
+            while Candidato.query.filter_by(protocolo=protocolo).first():
+                protocolo = gerar_protocolo()
             idade_val = request.form.get('idade')
             idade = int(idade_val) if idade_val and idade_val.isdigit() else None
             
@@ -149,11 +172,31 @@ def candidatura():
                 calcado=request.form.get('calcado', '').strip(),
                 
                 # Saúde
-                saude_problema=request.form.get('saude_problema', '').strip(),
-                saude_medicacao=request.form.get('saude_medicacao', '').strip(),
-                saude_acidente=request.form.get('saude_acidente', '').strip(),
-                saude_cirurgia=request.form.get('saude_cirurgia', '').strip(),
-                saude_internado=request.form.get('saude_internado', '').strip(),
+                saude_problema=processar_campo_saude(
+                    request.form.get('saude_problema_opcao'),
+                    request.form.get('saude_problema_desc'),
+                    request.form.get('saude_problema')
+                ),
+                saude_medicacao=processar_campo_saude(
+                    request.form.get('saude_medicacao_opcao'),
+                    request.form.get('saude_medicacao_desc'),
+                    request.form.get('saude_medicacao')
+                ),
+                saude_acidente=processar_campo_saude(
+                    request.form.get('saude_acidente_opcao'),
+                    request.form.get('saude_acidente_desc'),
+                    request.form.get('saude_acidente')
+                ),
+                saude_cirurgia=processar_campo_saude(
+                    request.form.get('saude_cirurgia_opcao'),
+                    request.form.get('saude_cirurgia_desc'),
+                    request.form.get('saude_cirurgia')
+                ),
+                saude_internado=processar_campo_saude(
+                    request.form.get('saude_internado_opcao'),
+                    request.form.get('saude_internado_desc'),
+                    request.form.get('saude_internado')
+                ),
                 saude_ultimo_medico=request.form.get('saude_ultimo_medico', '').strip(),
                 saude_pegar_peso=request.form.get('saude_pegar_peso', 'Sim'),
                 saude_coluna=request.form.get('saude_coluna', 'Não'),
@@ -161,10 +204,10 @@ def candidatura():
                 # Informações Complementares
                 comp_conhecimento_vaga=request.form.get('comp_conhecimento_vaga', '').strip(),
                 comp_tem_conhecido=request.form.get('comp_tem_conhecido', 'Não tenho'),
-                comp_nome_conhecido=request.form.get('comp_nome_conhecido', '').strip(),
+                comp_nome_conhecido=request.form.get('comp_nome_conhecido', '').strip() if request.form.get('comp_tem_conhecido') != 'Não tenho' else '',
                 comp_horas_extras=request.form.get('comp_horas_extras', 'Sim'),
                 comp_finais_semana=request.form.get('comp_finais_semana', 'Sim'),
-                comp_disponibilidade=request.form.get('comp_disponibilidade', '').strip(),
+                comp_disponibilidade=request.form.get('comp_disponibilidade', 'Todas').strip(),
                 
                 # Termo LGPD e Assinatura
                 termo_aceite=True if request.form.get('termo_aceite') else False,
@@ -176,7 +219,7 @@ def candidatura():
             db.session.add(novo_candidato)
             db.session.flush()
             
-            for i in [1, 2, 3]:
+            for i in range(1, 10):
                 empresa = request.form.get(f'exp_empresa_{i}', '').strip()
                 if empresa:
                     exp = ExperienciaProfissional(
@@ -204,7 +247,7 @@ def candidatura():
                 'grau_escolaridade': novo_candidato.grau_escolaridade or '',
                 'cidade': novo_candidato.cidade or '',
                 'bairro': novo_candidato.bairro or '',
-                'disponibilidade_horario': novo_candidato.comp_disponibilidade or 'Geral',
+                'disponibilidade_horario': novo_candidato.comp_disponibilidade or 'Todas',
                 'pcd': novo_candidato.deficiente_fisico or 'Não',
                 'data_cadastro': novo_candidato.data_cadastro.strftime('%d/%m/%Y às %H:%M') if novo_candidato.data_cadastro else datetime.now().strftime('%d/%m/%Y às %H:%M')
             }
@@ -213,6 +256,10 @@ def candidatura():
             
             return redirect(url_for('candidatura_sucesso', protocolo=protocolo))
             
+        except IntegrityError:
+            db.session.rollback()
+            flash(f'Já existe uma ficha cadastrada com o CPF {cpf_formatado}. É permitida apenas uma ficha por candidato.', 'warning')
+            return redirect(url_for('candidatura'))
         except Exception as e:
             db.session.rollback()
             flash(f'Ocorreu um erro ao salvar sua ficha: {str(e)}', 'danger')
@@ -234,7 +281,10 @@ def api_validar_cpf():
         return jsonify({'valido': False, 'existe': False, 'mensagem': 'CPF com formato ou dígitos inválidos.'})
         
     cpf_fmt = formatar_cpf(cpf_raw)
-    ja_existe = Candidato.query.filter_by(cpf=cpf_fmt).first()
+    cpf_digitos = ''.join([c for c in cpf_raw if c.isdigit()])
+    ja_existe = Candidato.query.filter(
+        (Candidato.cpf == cpf_fmt) | (Candidato.cpf == cpf_digitos)
+    ).first()
     if ja_existe:
         return jsonify({'valido': True, 'existe': True, 'mensagem': f'Este CPF já possui cadastro (Protocolo: {ja_existe.protocolo}).'})
         
@@ -281,6 +331,8 @@ def admin_dashboard():
     status_filtro = request.args.get('status', '')
     loja_filtro = request.args.get('loja', '')
     busca = request.args.get('q', '').strip()
+    data_de = request.args.get('data_de', '').strip()
+    data_ate = request.args.get('data_ate', '').strip()
     
     query = Candidato.query
     
@@ -304,6 +356,28 @@ def admin_dashboard():
                 (Candidato.protocolo.ilike(f'%{busca}%'))
             )
             
+    # Filtro por Período de Data
+    if data_de and not data_ate:
+        try:
+            dt_ini = datetime.strptime(data_de, '%Y-%m-%d')
+            dt_fim = datetime.strptime(data_de + ' 23:59:59', '%Y-%m-%d %H:%M:%S')
+            query = query.filter(Candidato.data_cadastro >= dt_ini, Candidato.data_cadastro <= dt_fim)
+        except ValueError:
+            pass
+    elif data_de and data_ate:
+        try:
+            dt_ini = datetime.strptime(data_de, '%Y-%m-%d')
+            dt_fim = datetime.strptime(data_ate + ' 23:59:59', '%Y-%m-%d %H:%M:%S')
+            query = query.filter(Candidato.data_cadastro >= dt_ini, Candidato.data_cadastro <= dt_fim)
+        except ValueError:
+            pass
+    elif not data_de and data_ate:
+        try:
+            dt_fim = datetime.strptime(data_ate + ' 23:59:59', '%Y-%m-%d %H:%M:%S')
+            query = query.filter(Candidato.data_cadastro <= dt_fim)
+        except ValueError:
+            pass
+            
     candidatos = query.order_by(Candidato.data_cadastro.desc()).all()
     
     metricas = {
@@ -321,7 +395,9 @@ def admin_dashboard():
         metricas=metricas,
         status_atual=status_filtro,
         loja_atual=loja_filtro,
-        busca_atual=busca
+        busca_atual=busca,
+        data_de_atual=data_de,
+        data_ate_atual=data_ate
     )
 
 @app.route('/admin/candidato/<int:id>')

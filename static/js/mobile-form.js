@@ -143,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       console.error(err);
-      isCpfValid = true;
+      isCpfValid = false;
+      mostrarErroCpf('Não foi possível validar o CPF. Verifique sua conexão.');
     } finally {
       isCpfChecking = false;
     }
@@ -279,7 +280,27 @@ document.addEventListener('DOMContentLoaded', () => {
     radioFilhosNao.addEventListener('change', atualizarVisibilidadeFilhos);
   }
 
-  // Visibilidade deficiência
+  // Visibilidade de Companheiro(a) conforme Estado Civil
+  const selectEstadoCivil = document.getElementById('estado_civil');
+  const boxCompanheiro = document.getElementById('boxCompanheiro');
+  const inputCompanheiro = document.getElementById('companheiro');
+
+  function atualizarEstadoCivil() {
+    if (!selectEstadoCivil || !boxCompanheiro) return;
+    const val = selectEstadoCivil.value;
+    if (val === 'Casado' || val === 'Divorciado' || val === 'Viúvo') {
+      boxCompanheiro.style.display = 'block';
+    } else {
+      boxCompanheiro.style.display = 'none';
+      if (inputCompanheiro) inputCompanheiro.value = '';
+    }
+  }
+  if (selectEstadoCivil) {
+    selectEstadoCivil.addEventListener('change', atualizarEstadoCivil);
+    atualizarEstadoCivil();
+  }
+
+  // Visibilidade deficiência PCD
   const defSim = document.getElementById('def_sim');
   const defNao = document.getElementById('def_nao');
   const boxDefDesc = document.getElementById('boxDefDesc');
@@ -295,6 +316,109 @@ document.addEventListener('DOMContentLoaded', () => {
     defSim.addEventListener('change', atualizarDeficiencia);
     defNao.addEventListener('change', atualizarDeficiencia);
   }
+
+  // Visibilidade Perguntas de Saúde (1 a 5)
+  const camposSaude = [
+    { radioName: 'saude_problema_opcao', boxId: 'boxSaudeProblemaDesc', inputId: 'saude_problema_desc' },
+    { radioName: 'saude_medicacao_opcao', boxId: 'boxSaudeMedicacaoDesc', inputId: 'saude_medicacao_desc' },
+    { radioName: 'saude_acidente_opcao', boxId: 'boxSaudeAcidenteDesc', inputId: 'saude_acidente_desc' },
+    { radioName: 'saude_cirurgia_opcao', boxId: 'boxSaudeCirurgiaDesc', inputId: 'saude_cirurgia_desc' },
+    { radioName: 'saude_internado_opcao', boxId: 'boxSaudeInternadoDesc', inputId: 'saude_internado_desc' }
+  ];
+
+  camposSaude.forEach(item => {
+    const radios = document.querySelectorAll(`input[name="${item.radioName}"]`);
+    const box = document.getElementById(item.boxId);
+    const input = document.getElementById(item.inputId);
+
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.value === 'Sim' && radio.checked) {
+          if (box) box.style.display = 'block';
+          if (input) input.focus();
+        } else if (radio.value === 'Não' && radio.checked) {
+          if (box) {
+            box.style.display = 'none';
+            if (input) input.value = '';
+          }
+        }
+      });
+    });
+  });
+
+  // Visibilidade Conhecido / Parente na Empresa
+  const radiosTemConhecido = document.querySelectorAll('input[name="comp_tem_conhecido"]');
+  const boxNomeConhecido = document.getElementById('boxNomeConhecido');
+  const inputNomeConhecido = document.getElementById('comp_nome_conhecido');
+
+  radiosTemConhecido.forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (radio.checked) {
+        if (radio.value === 'Não tenho') {
+          if (boxNomeConhecido) boxNomeConhecido.style.display = 'none';
+          if (inputNomeConhecido) inputNomeConhecido.value = '';
+        } else {
+          if (boxNomeConhecido) {
+            boxNomeConhecido.style.display = 'block';
+            if (inputNomeConhecido) inputNomeConhecido.focus();
+          }
+        }
+      }
+    });
+  });
+
+  // Gerenciamento de Experiências Profissionais Adicionais
+  let maxExpVisiveis = 2;
+  const btnAddExp = document.getElementById('btnAddExp');
+
+  if (btnAddExp) {
+    btnAddExp.addEventListener('click', () => {
+      if (maxExpVisiveis === 2) {
+        const box3 = document.getElementById('boxExp3');
+        if (box3) {
+          box3.style.display = 'block';
+          maxExpVisiveis = 3;
+          box3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else if (maxExpVisiveis === 3) {
+        const box4 = document.getElementById('boxExp4');
+        if (box4) {
+          box4.style.display = 'block';
+          maxExpVisiveis = 4;
+          btnAddExp.style.display = 'none';
+          box4.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    });
+  }
+
+  window.removerExperiencia = function(num) {
+    const box = document.getElementById(`boxExp${num}`);
+    if (box) {
+      box.style.display = 'none';
+      box.querySelectorAll('input').forEach(inp => inp.value = '');
+      if (btnAddExp) btnAddExp.style.display = 'inline-flex';
+      if (num === 4 && maxExpVisiveis === 4) maxExpVisiveis = 3;
+      if (num === 3 && maxExpVisiveis >= 3) maxExpVisiveis = 2;
+    }
+  };
+
+  // Sincronização de classe .selected para Radio Cards
+  document.querySelectorAll('.radio-card input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const groupName = radio.getAttribute('name');
+      document.querySelectorAll(`input[type="radio"][name="${groupName}"]`).forEach(r => {
+        const card = r.closest('.radio-card');
+        if (card) {
+          if (r.checked) {
+            card.classList.add('selected');
+          } else {
+            card.classList.remove('selected');
+          }
+        }
+      });
+    });
+  });
 
   // ==========================================
   // NAVEGAÇÃO ENTRE ETAPAS
@@ -318,6 +442,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentStep === totalSteps) {
       btnNext.style.display = 'none';
       btnSubmit.style.display = 'inline-flex';
+      if (typeof window.resizeSignatureCanvas === 'function') {
+        setTimeout(window.resizeSignatureCanvas, 150);
+      }
     } else {
       btnNext.style.display = 'inline-flex';
       btnSubmit.style.display = 'none';
@@ -357,7 +484,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return isValid;
   }
 
-  btnNext.addEventListener('click', () => {
+  btnNext.addEventListener('click', async () => {
+    if (currentStep === 2 && isCpfChecking) {
+      let checks = 0;
+      while (isCpfChecking && checks < 20) {
+        await new Promise(r => setTimeout(r, 100));
+        checks++;
+      }
+    }
+
     if (validateCurrentStep()) {
       if (currentStep < totalSteps) {
         currentStep++;
@@ -399,6 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('resize', resizeCanvas);
+    window.resizeSignatureCanvas = resizeCanvas;
     setTimeout(resizeCanvas, 300);
 
     function getCoordinates(e) {

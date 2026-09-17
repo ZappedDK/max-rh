@@ -1,4 +1,4 @@
-﻿import re
+import re
 import random
 import string
 from datetime import datetime, timezone
@@ -41,9 +41,8 @@ def formatar_cpf(cpf_str):
     return cpf_str
 
 def gerar_protocolo():
-    agora = datetime.now(timezone.utc).strftime('%Y%m')
-    letras_numeros = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
-    return f'MAX-{agora}-{letras_numeros}'
+    codigo = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+    return f'MAX-{codigo}'
 
 def gerar_qrcode_svg_data(url):
     """Gera um QR Code em SVG e retorna string/data-uri para visualização no navegador"""
