@@ -168,14 +168,32 @@
         </div>
       </div>
 
-      <div style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 8px; padding: 12px; margin-top: 10px;">
-        <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Endereço Residencial</span>
-        <strong>{{ candidato.endereco or '-' }}, Nº {{ candidato.numero or 'S/N' }} {% if candidato.complemento %}- {{ candidato.complemento }}{% endif %}</strong><br>
-        <span style="font-size: 0.85rem; color: var(--admin-text-muted);">
-          {% if candidato.quadra %}Qd: {{ candidato.quadra }} {% endif %}
-          {% if candidato.lote %}Lt: {{ candidato.lote }} • {% endif %}
-          Bairro: {{ candidato.bairro or '-' }} • {{ candidato.cidade or '-' }}/{{ candidato.uf or '-' }} • CEP: {{ candidato.cep or '-' }}
-        </span>
+      <div style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 8px; padding: 12px 16px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Endereço Residencial</span>
+          <strong>{{ candidato.endereco or '-' }}, Nº {{ candidato.numero or 'S/N' }} {% if candidato.complemento %}- {{ candidato.complemento }}{% endif %}</strong><br>
+          <span style="font-size: 0.85rem; color: var(--admin-text-muted);">
+            {% if candidato.quadra %}Qd: {{ candidato.quadra }} {% endif %}
+            {% if candidato.lote %}Lt: {{ candidato.lote }} • {% endif %}
+            Bairro: {{ candidato.bairro or '-' }} • {{ candidato.cidade or '-' }}/{{ candidato.uf or '-' }} • CEP: {{ candidato.cep or '-' }}
+          </span>
+        </div>
+        {% if candidato.endereco or candidato.cep %}
+        <div>
+          <a href="https://www.google.com/maps/search/?api=1&query={{ (candidato.endereco ~ ', ' ~ (candidato.numero or '') ~ ' - ' ~ (candidato.bairro or '') ~ ', ' ~ (candidato.cidade or '') ~ ' - ' ~ (candidato.uf or '') ~ ', ' ~ (candidato.cep or ''))|urlencode }}" 
+             target="_blank" 
+             rel="noopener noreferrer"
+             class="btn btn-outline" 
+             style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.84rem; padding: 8px 14px; border-color: #2563eb; color: #3b82f6; background: rgba(37, 99, 235, 0.08); text-decoration: none; border-radius: 6px; font-weight: 600; white-space: nowrap;"
+             title="Abrir rota e localização no Google Maps">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            Ver no Maps
+          </a>
+        </div>
+        {% endif %}
       </div>
     </div>
 
@@ -385,40 +403,82 @@
         Anexos e Documentos
       </h3>
 
-      <form method="POST" action="{{ url_for('admin_upload_anexo', id=candidato.id) }}" enctype="multipart/form-data" style="margin-bottom: 16px;">
-        <div style="margin-bottom: 8px;">
-          <label class="form-label" style="font-size: 0.82rem; color: var(--admin-text-muted);">Tipo do Arquivo</label>
-          <select name="tipo" class="form-select" style="min-height: 38px; background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);">
+      <!-- Formulário de Upload -->
+      <form method="POST" action="{{ url_for('admin_upload_anexo', id=candidato.id) }}" enctype="multipart/form-data" style="margin-bottom: 16px; background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 8px; padding: 14px;">
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 0.78rem; font-weight: 700; color: var(--admin-text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Tipo do Arquivo</label>
+          <select name="tipo" class="form-select" style="min-height: 38px; background: var(--admin-card-bg); color: var(--admin-text-primary); border-color: var(--admin-border); font-size: 0.88rem;">
             <option value="foto_candidato">Foto do Candidato (3x4)</option>
-            <option value="documento" selected>Foto de Documento (RG / CNH)</option>
-            <option value="curriculo">Currículo / Carteira</option>
+            <option value="documento" selected>RG / CNH / Documento</option>
+            <option value="curriculo">Currículo / Carteira de Trabalho</option>
             <option value="outro">Outro Arquivo</option>
           </select>
         </div>
 
         <div style="margin-bottom: 10px;">
-          <input type="file" name="arquivo" class="form-input" style="padding: 6px; min-height: 38px; background: var(--admin-bg); color: var(--admin-text-primary); border-color: var(--admin-border);" required accept=".png,.jpg,.jpeg,.pdf">
+          <label style="font-size: 0.78rem; font-weight: 700; color: var(--admin-text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Selecionar Arquivo</label>
+          <input type="file" name="arquivo" style="width: 100%; padding: 6px 8px; min-height: 38px; background: var(--admin-card-bg); color: var(--admin-text-primary); border: 1px solid var(--admin-border); border-radius: 6px; font-size: 0.85rem;" required accept=".png,.jpg,.jpeg,.pdf">
         </div>
 
-        <button type="submit" class="btn btn-outline" style="width: 100%; padding: 8px; font-size: 0.88rem;">
-          Fazer Upload do Arquivo
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 9px; font-size: 0.88rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Fazer Upload
         </button>
       </form>
 
+      <!-- Lista de Anexos -->
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        {% for anexo in candidato.anexos %}
-          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--admin-bg); border: 1px solid var(--admin-border); padding: 8px 12px; border-radius: 6px; font-size: 0.85rem;">
-            <div>
-              <div style="font-weight: 600; color: var(--admin-text-primary); max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ anexo.nome_original }}</div>
-              <small style="color: var(--admin-text-muted);">{{ anexo.tipo|replace('_', ' ')|capitalize }}</small>
-            </div>
-            <a href="{{ url_for('static', filename='uploads/' + anexo.nome_salvo) }}" target="_blank" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.78rem;">
-              Abrir
-            </a>
+        {% if candidato.anexos %}
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--admin-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+            {{ candidato.anexos|length }} arquivo(s) adicionado(s)
           </div>
+          {% for anexo in candidato.anexos %}
+            <div style="display: flex; align-items: center; gap: 10px; background: var(--admin-bg); border: 1px solid var(--admin-border); padding: 10px 12px; border-radius: 8px;">
+              <!-- Ícone por tipo -->
+              <div style="width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+                background: {% if anexo.tipo == 'foto_candidato' %}rgba(16,185,129,0.12){% elif anexo.tipo == 'documento' %}rgba(37,99,235,0.12){% elif anexo.tipo == 'curriculo' %}rgba(245,158,11,0.12){% else %}rgba(100,116,139,0.12){% endif %};">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 17px; height: 17px; color: {% if anexo.tipo == 'foto_candidato' %}#10b981{% elif anexo.tipo == 'documento' %}#2563eb{% elif anexo.tipo == 'curriculo' %}#f59e0b{% else %}#64748b{% endif %};">
+                  {% if anexo.tipo == 'foto_candidato' %}
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                  {% elif anexo.tipo == 'curriculo' %}
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                  {% else %}
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/>
+                  {% endif %}
+                </svg>
+              </div>
+              <!-- Informações -->
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 600; color: var(--admin-text-primary); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ anexo.nome_original }}</div>
+                <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                  <span style="font-size: 0.72rem; font-weight: 700; padding: 1px 7px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+                    background: {% if anexo.tipo == 'foto_candidato' %}rgba(16,185,129,0.12); color:#10b981{% elif anexo.tipo == 'documento' %}rgba(37,99,235,0.12); color:#2563eb{% elif anexo.tipo == 'curriculo' %}rgba(245,158,11,0.12); color:#f59e0b{% else %}rgba(100,116,139,0.12); color:#64748b{% endif %};">
+                    {{ anexo.tipo|replace('_', ' ')|capitalize }}
+                  </span>
+                  <span style="font-size: 0.72rem; color: var(--admin-text-muted);">{{ anexo.data_criacao.strftime('%d/%m/%Y') }}</span>
+                </div>
+              </div>
+              <!-- Ação -->
+              <a href="{{ url_for('static', filename='uploads/' + anexo.nome_salvo) }}" target="_blank" class="btn btn-outline" style="padding: 5px 12px; font-size: 0.78rem; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px;">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Abrir
+              </a>
+            </div>
+          {% endfor %}
         {% else %}
-          <p style="color: var(--admin-text-muted); font-size: 0.85rem; text-align: center; margin: 10px 0;">Nenhum anexo adicionado.</p>
-        {% endfor %}
+          <div style="text-align: center; padding: 20px; color: var(--admin-text-muted);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.4;">
+              <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+            </svg>
+            <p style="font-size: 0.85rem; margin: 0;">Nenhum anexo adicionado.</p>
+          </div>
+        {% endif %}
       </div>
     </div>
 

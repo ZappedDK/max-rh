@@ -79,7 +79,7 @@ class SistemaRecrutamentoTestCase(unittest.TestCase):
         with app.app_context():
             cand = Candidato.query.filter_by(cpf='529.982.247-25').first()
             self.assertIsNotNone(cand)
-            self.assertEqual(cand.nome_completo, 'JOÃO DA SILVA SAURO')
+            self.assertEqual(cand.nome_completo, 'João Da Silva Sauro')
             self.assertEqual(cand.loja_proxima, '1 - Max - Setor Santa Rita')
             self.assertEqual(len(cand.experiencias), 1)
             self.assertEqual(cand.experiencias[0].nome_empresa, 'Supermercado Antigo')

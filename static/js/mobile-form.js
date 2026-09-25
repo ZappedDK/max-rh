@@ -590,21 +590,86 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  form.addEventListener('submit', (e) => {
+  // ==========================================
+  // ENVIO DO FORMULÁRIO (iOS COMPATIBLE)
+  // ==========================================
+  // iOS Safari não dispara o evento submit ao clicar num botão type=submit
+  // quando há listeners de submit com e.preventDefault() encadeados.
+  // Usamos click no botão + submit programático após validação.
+  btnSubmit.addEventListener('click', (e) => {
+    e.preventDefault();
+
     if (!hasSigned || !inputSignature.value) {
-      e.preventDefault();
       alert('Por favor, faça sua assinatura no quadro antes de enviar.');
-      return false;
+      return;
     }
+
     const checkTermo = document.getElementById('termo_aceite');
     if (checkTermo && !checkTermo.checked) {
-      e.preventDefault();
       alert('Você deve aceitar a declaração e o termo de dados para continuar.');
-      return false;
+      return;
     }
+
     btnSubmit.disabled = true;
-    btnSubmit.innerHTML = 'Enviando ficha...';
+    btnSubmit.innerHTML = '<span>Enviando ficha...</span>';
+
+    // Compatível com todos os browsers incluindo iOS Safari
+    if (form.requestSubmit) {
+      form.requestSubmit();
+    } else {
+      form.submit();
+    }
   });
+
+  // ==========================================
+  // MODAL DE INFORMAÇÕES DO CARGO
+  // ==========================================
+  const selectCargo = document.getElementById('cargo_pretendido');
+  const btnSaibaMaisWrapper = document.getElementById('btnSaibaMaisWrapper');
+  const btnSaibaMais = document.getElementById('btnSaibaMais');
+  const modalCargo = document.getElementById('modalCargo');
+  const modalCargoTitulo = document.getElementById('modalCargoTitulo');
+  const modalCargoDesc = document.getElementById('modalCargoDesc');
+  const modalCargoFechar = document.getElementById('modalCargoFechar');
+  const modalCargoFechar2 = document.getElementById('modalCargoFechar2');
+
+  function fecharModal() {
+    modalCargo.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function abrirModal() {
+    const cargo = selectCargo.value;
+    const option = selectCargo.options[selectCargo.selectedIndex];
+    const titulo = option.text;
+    const desc = option.getAttribute('data-desc') || 'Descrição não disponível para este cargo.';
+    modalCargoTitulo.textContent = titulo;
+    modalCargoDesc.textContent = desc;
+    modalCargo.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  if (selectCargo) {
+    selectCargo.addEventListener('change', () => {
+      if (selectCargo.value) {
+        btnSaibaMaisWrapper.style.display = 'block';
+      } else {
+        btnSaibaMaisWrapper.style.display = 'none';
+      }
+    });
+  }
+
+  if (btnSaibaMais) btnSaibaMais.addEventListener('click', abrirModal);
+  if (modalCargoFechar) modalCargoFechar.addEventListener('click', fecharModal);
+  if (modalCargoFechar2) modalCargoFechar2.addEventListener('click', fecharModal);
+
+  // Fechar clicando no backdrop
+  if (modalCargo) {
+    modalCargo.addEventListener('click', (e) => {
+      if (e.target === modalCargo) fecharModal();
+    });
+  }
 
   updateStepUI();
 });
+

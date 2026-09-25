@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 
 from sqlalchemy.exc import IntegrityError
 from config import Config
-from models import db, User, Candidato, ExperienciaProfissional, Observacao, Anexo, Configuracao
+from models import db, User, Candidato, ExperienciaProfissional, Observacao, Anexo, Configuracao, Cargo, VagaLoja
 from init_db import inicializar_banco
 from utils import validar_cpf, formatar_cpf, limpar_apenas_digitos, gerar_protocolo, gerar_qrcode_svg_data, allowed_file
 from email_service import notificar_rh_novo_candidato, testar_configuracao_smtp
@@ -49,17 +49,18 @@ def inject_globals():
         'tem_logo': tem_logo,
         'logo_version': logo_version,
         'lojas_disponiveis': [
-            '1 - Max - Santa Rita',
-            '2 - Max - Vila Mutirão',
-            '3 - Max - Residencial Rio Verde',
-            '4 - Max - Independência Mansões',
-            '5 - Max - Vila Brasília',
-            '6 - Max - Tremendão',
-            '7 - Max - Triunfo',
-            '8 - Max - Tiradentes',
-            '9 - Max - Cidade Jardim',
-            '10 - Max - Jardim Nova Era'
-        ]
+            '01 - Santa Rita',
+            '02 - Vila Mutirão',
+            '03 - Rio Verde',
+            '04 - Independência Mansões',
+            '05 - Vila Brasília',
+            '06 - Tremendão',
+            '07 - Triunfo',
+            '08 - Tiradentes',
+            '09 - Cidade Jardim',
+            '10 - Jardim Nova Era'
+        ],
+        'cargos_ativos': Cargo.query.filter_by(ativo=True).order_by(Cargo.nome).all(),
     }
 
 @app.template_filter('formatar_cpf')
@@ -122,7 +123,7 @@ def candidatura():
                 loja_proxima=request.form.get('loja_proxima', '').strip(),
                 
                 # Dados Pessoais
-                nome_completo=request.form.get('nome_completo', '').strip().upper(),
+                nome_completo=request.form.get('nome_completo', '').strip().title(),
                 idade=idade,
                 sexo=request.form.get('sexo'),
                 data_nascimento=request.form.get('data_nascimento', '').strip(),
@@ -411,23 +412,68 @@ def admin_candidato_detalhe(id):
 def admin_alterar_status(id):
     candidato = Candidato.query.get_or_404(id)
     novo_status = request.form.get('status')
+    status_anterior = candidato.status
     
     status_validos = ['pendente', 'em_analise', 'contratar', 'nao_contratar', 'banco_talentos']
-    if novo_status in status_validos:
-        candidato.status = novo_status
-        candidato.data_atualizacao = datetime.now(timezone.utc)
-        
-        obs = Observacao(
-            candidato_id=candidato.id,
-            usuario_id=current_user.id,
-            texto=f'Alterou o status para: {novo_status.replace("_", " ").upper()}'
-        )
-        db.session.add(obs)
-        db.session.commit()
-        flash(f'Status atualizado para: {novo_status.replace("_", " ").upper()}', 'success')
-    else:
+    if novo_status not in status_validos:
         flash('Status inválido.', 'danger')
-        
+        return redirect(url_for('admin_candidato_detalhe', id=id))
+    
+    # Lógica de controle de vagas
+    if novo_status == 'contratar' and status_anterior != 'contratar':
+        cargo_obj = Cargo.query.filter(
+            db.func.upper(Cargo.nome) == candidato.cargo_pretendido.upper()
+        ).first()
+        if not cargo_obj:
+            flash(
+                f'⚠️ Atenção: o cargo "{candidato.cargo_pretendido}" não está cadastrado no Controle de Vagas. '
+                f'Cadastre a vaga para que o sistema possa contabilizá-la corretamente.',
+                'warning'
+            )
+        else:
+            vaga = VagaLoja.query.filter_by(
+                cargo_id=cargo_obj.id,
+                loja=candidato.loja_proxima
+            ).first()
+            if not vaga:
+                flash(
+                    f'⚠️ Atenção: não há vagas configuradas para "{candidato.cargo_pretendido}" '
+                    f'na unidade "{candidato.loja_proxima}". Acesse Controle de Vagas para configurar.',
+                    'warning'
+                )
+            elif vaga.vagas_disponiveis <= 0:
+                flash(
+                    f'⚠️ Todas as vagas de "{candidato.cargo_pretendido}" em "{candidato.loja_proxima}" '
+                    f'já estão preenchidas ({vaga.vagas_preenchidas}/{vaga.vagas_total}). '
+                    f'Atualize o Controle de Vagas se necessário.',
+                    'warning'
+                )
+            else:
+                vaga.vagas_preenchidas += 1
+    
+    elif status_anterior == 'contratar' and novo_status != 'contratar':
+        cargo_obj = Cargo.query.filter(
+            db.func.upper(Cargo.nome) == candidato.cargo_pretendido.upper()
+        ).first()
+        if cargo_obj:
+            vaga = VagaLoja.query.filter_by(
+                cargo_id=cargo_obj.id,
+                loja=candidato.loja_proxima
+            ).first()
+            if vaga and vaga.vagas_preenchidas > 0:
+                vaga.vagas_preenchidas -= 1
+    
+    candidato.status = novo_status
+    candidato.data_atualizacao = datetime.now(timezone.utc)
+    
+    obs = Observacao(
+        candidato_id=candidato.id,
+        usuario_id=current_user.id,
+        texto=f'Alterou o status para: {novo_status.replace("_", " ").upper()}'
+    )
+    db.session.add(obs)
+    db.session.commit()
+    flash(f'Status atualizado para: {novo_status.replace("_", " ").upper()}', 'success')
     return redirect(url_for('admin_candidato_detalhe', id=id))
 
 @app.route('/admin/candidato/<int:id>/observacao', methods=['POST'])
@@ -725,6 +771,329 @@ def admin_configuracoes():
     configs_list = Configuracao.query.all()
     cfg_dict = {c.chave: c.valor for c in configs_list}
     return render_template('admin/configuracoes.html', configs=cfg_dict, aba_ativa=aba_ativa)
+
+
+# ==========================================
+# CONTROLE DE VAGAS
+# ==========================================
+
+@app.route('/admin/vagas')
+@login_required
+def admin_vagas():
+    lojas = [
+        '01 - Santa Rita', '02 - Vila Mutirão', '03 - Rio Verde',
+        '04 - Independência Mansões', '05 - Vila Brasília', '06 - Tremendão',
+        '07 - Triunfo', '08 - Tiradentes', '09 - Cidade Jardim', '10 - Jardim Nova Era'
+    ]
+    cargos = Cargo.query.order_by(Cargo.nome).all()
+    
+    lojas_selecionadas = request.args.getlist('loja')
+    cargos_selecionados = request.args.getlist('cargo')
+    
+    query = VagaLoja.query.join(Cargo)
+    
+    if lojas_selecionadas:
+        query = query.filter(VagaLoja.loja.in_(lojas_selecionadas))
+    if cargos_selecionados:
+        query = query.filter(Cargo.id.in_([int(c) for c in cargos_selecionados if c.isdigit()]))
+        
+    vagas_loja = query.order_by(VagaLoja.loja, Cargo.nome).all()
+    
+    return render_template(
+        'admin/vagas.html',
+        lojas=lojas,
+        cargos=cargos,
+        lojas_selecionadas=lojas_selecionadas,
+        cargos_selecionados=[int(c) for c in cargos_selecionados if c.isdigit()],
+        vagas_loja=vagas_loja,
+    )
+
+@app.route('/admin/vagas/cargo/novo', methods=['POST'])
+@login_required
+def admin_vagas_cargo_novo():
+    if current_user.role != 'admin':
+        flash('Acesso restrito ao administrador.', 'danger')
+        return redirect(url_for('admin_vagas'))
+    nome = request.form.get('nome', '').strip().upper()
+    descricao = request.form.get('descricao', '').strip()
+    if not nome:
+        flash('O nome do cargo é obrigatório.', 'danger')
+        return redirect(url_for('admin_vagas'))
+    if Cargo.query.filter(db.func.upper(Cargo.nome) == nome).first():
+        flash(f'Já existe um cargo com o nome "{nome}".', 'warning')
+        return redirect(url_for('admin_vagas'))
+    db.session.add(Cargo(nome=nome, descricao=descricao, ativo=True))
+    db.session.commit()
+    flash(f'Cargo "{nome}" criado com sucesso!', 'success')
+    return redirect(url_for('admin_vagas'))
+
+@app.route('/admin/vagas/cargo/<int:id>/editar', methods=['POST'])
+@login_required
+def admin_vagas_cargo_editar(id):
+    if current_user.role != 'admin':
+        flash('Acesso restrito ao administrador.', 'danger')
+        return redirect(url_for('admin_vagas'))
+    cargo = Cargo.query.get_or_404(id)
+    cargo.descricao = request.form.get('descricao', '').strip()
+    novo_nome = request.form.get('nome', '').strip().upper()
+    if novo_nome and novo_nome != cargo.nome:
+        if Cargo.query.filter(db.func.upper(Cargo.nome) == novo_nome, Cargo.id != id).first():
+            flash(f'Já existe outro cargo com o nome "{novo_nome}".', 'warning')
+            return redirect(url_for('admin_vagas'))
+        cargo.nome = novo_nome
+    db.session.commit()
+    flash('Cargo atualizado com sucesso!', 'success')
+    return redirect(url_for('admin_vagas'))
+
+@app.route('/admin/vagas/cargo/<int:id>/excluir', methods=['POST'])
+@login_required
+def admin_vagas_cargo_excluir(id):
+    if current_user.role != 'admin':
+        flash('Acesso restrito ao administrador.', 'danger')
+        return redirect(url_for('admin_vagas'))
+    cargo = Cargo.query.get_or_404(id)
+    status_bloqueantes = ['pendente', 'em_analise', 'contratar', 'banco_talentos']
+    bloqueados = Candidato.query.filter(
+        db.func.upper(Candidato.cargo_pretendido) == cargo.nome.upper(),
+        Candidato.status.in_(status_bloqueantes)
+    ).count()
+    if bloqueados > 0:
+        flash(
+            f'Não é possível excluir o cargo "{cargo.nome}": há {bloqueados} candidato(s) '
+            f'com status Pendente, Em Análise, Contratar ou Banco de Talentos. '
+            f'Atualize-os para "Não Contratar" antes de excluir.',
+            'danger'
+        )
+        return redirect(url_for('admin_vagas'))
+    db.session.delete(cargo)
+    db.session.commit()
+    flash(f'Cargo "{cargo.nome}" excluído com sucesso.', 'success')
+    return redirect(url_for('admin_vagas'))
+
+@app.route('/admin/vagas/loja/nova', methods=['POST'])
+@login_required
+def admin_vagas_loja_nova():
+    if current_user.role != 'admin':
+        flash('Acesso restrito ao administrador.', 'danger')
+        return redirect(url_for('admin_vagas'))
+    cargo_id = request.form.get('cargo_id', type=int)
+    loja = request.form.get('loja', '').strip()
+    total_str = request.form.get('vagas_total', '1').strip()
+    vagas_total = int(total_str) if total_str.isdigit() and int(total_str) > 0 else 1
+    if not cargo_id or not loja:
+        flash('Selecione um cargo e uma loja.', 'danger')
+        return redirect(url_for('admin_vagas', loja=loja))
+    if VagaLoja.query.filter_by(cargo_id=cargo_id, loja=loja).first():
+        flash('Já existe configuração de vagas para esse cargo nesta loja. Use editar para alterar.', 'warning')
+        return redirect(url_for('admin_vagas', loja=loja))
+    db.session.add(VagaLoja(loja=loja, cargo_id=cargo_id, vagas_total=vagas_total, vagas_preenchidas=0))
+    db.session.commit()
+    flash('Vagas configuradas com sucesso!', 'success')
+    return redirect(url_for('admin_vagas', loja=loja))
+
+@app.route('/admin/vagas/loja/<int:id>/editar', methods=['POST'])
+@login_required
+def admin_vagas_loja_editar(id):
+    if current_user.role != 'admin':
+        flash('Acesso restrito ao administrador.', 'danger')
+        return redirect(url_for('admin_vagas'))
+    vaga = VagaLoja.query.get_or_404(id)
+    total_str = request.form.get('vagas_total', '1').strip()
+    vagas_total = int(total_str) if total_str.isdigit() and int(total_str) > 0 else 1
+    vaga.vagas_total = vagas_total
+    if vaga.vagas_preenchidas > vagas_total:
+        vaga.vagas_preenchidas = vagas_total
+    db.session.commit()
+    flash('Quantidade de vagas atualizada!', 'success')
+    return redirect(url_for('admin_vagas', loja=vaga.loja))
+
+@app.route('/admin/vagas/loja/<int:id>/excluir', methods=['POST'])
+@login_required
+def admin_vagas_loja_excluir(id):
+    if current_user.role != 'admin':
+        flash('Acesso restrito ao administrador.', 'danger')
+        return redirect(url_for('admin_vagas'))
+    vaga = VagaLoja.query.get_or_404(id)
+    loja = vaga.loja
+    db.session.delete(vaga)
+    db.session.commit()
+    flash('Vaga removida da loja.', 'success')
+    return redirect(url_for('admin_vagas', loja=loja))
+
+@app.route('/admin/vagas/exportar')
+@login_required
+def admin_vagas_exportar():
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, PatternFill
+    import io
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Relatório de Vagas"
+    
+    headers = ['Unidade', 'Cargo', 'Vagas Oficiais', 'Vagas Preenchidas', 'Vagas Disponíveis']
+    ws.append(headers)
+    
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill("solid", fgColor="2563EB")
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+    
+    lojas_selecionadas = request.args.getlist('loja')
+    cargos_selecionados = request.args.getlist('cargo')
+    
+    query = VagaLoja.query.join(Cargo)
+    if lojas_selecionadas:
+        query = query.filter(VagaLoja.loja.in_(lojas_selecionadas))
+    if cargos_selecionados:
+        query = query.filter(Cargo.id.in_([int(c) for c in cargos_selecionados if c.isdigit()]))
+        
+    vagas = query.order_by(VagaLoja.loja, Cargo.nome).all()
+    for v in vagas:
+        ws.append([
+            v.loja,
+            v.cargo.nome,
+            v.vagas_total,
+            v.vagas_preenchidas,
+            v.vagas_disponiveis
+        ])
+    
+    # Auto-adjust columns width
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter 
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column].width = adjusted_width
+
+    out = io.BytesIO()
+    wb.save(out)
+    out.seek(0)
+    
+    filename = f"Relatorio_Vagas_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return send_file(
+        out,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
+
+@app.route('/admin/vagas/template_importacao')
+@login_required
+def admin_vagas_template():
+    if current_user.role != 'admin':
+        flash('Acesso restrito ao administrador.', 'danger')
+        return redirect(url_for('admin_vagas'))
+        
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, PatternFill
+    import io
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Importação de Cargos"
+    
+    headers = ['Nome do Cargo', 'Descrição (Opcional)']
+    ws.append(headers)
+    
+    header_font = Font(bold=True)
+    header_fill = PatternFill("solid", fgColor="E2E8F0")
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.font = header_font
+        cell.fill = header_fill
+    
+    # Linhas de exemplo
+    ws.append(['OPERADOR DE CAIXA', 'Realiza o atendimento no caixa e processa pagamentos.'])
+    ws.append(['AÇOUGUEIRO', 'Responsável pelo corte e preparo de carnes no balcão.'])
+    
+    ws.column_dimensions['A'].width = 35
+    ws.column_dimensions['B'].width = 60
+
+    out = io.BytesIO()
+    wb.save(out)
+    out.seek(0)
+    
+    return send_file(
+        out,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name="Template_Importacao_Cargos.xlsx"
+    )
+
+@app.route('/admin/vagas/importar', methods=['POST'])
+@login_required
+def admin_vagas_importar():
+    if current_user.role != 'admin':
+        flash('Acesso restrito ao administrador.', 'danger')
+        return redirect(url_for('admin_vagas'))
+        
+    if 'file' not in request.files:
+        flash('Nenhum arquivo enviado.', 'danger')
+        return redirect(url_for('admin_vagas'))
+        
+    file = request.files['file']
+    if file.filename == '':
+        flash('Nenhum arquivo selecionado.', 'danger')
+        return redirect(url_for('admin_vagas'))
+        
+    if not (file.filename.endswith('.xlsx') or file.filename.endswith('.xls')):
+        flash('O arquivo deve ser um Excel (.xlsx ou .xls).', 'danger')
+        return redirect(url_for('admin_vagas'))
+        
+    import openpyxl
+    try:
+        wb = openpyxl.load_workbook(file)
+        ws = wb.active
+        
+        registros_adicionados = 0
+        registros_atualizados = 0
+        erros = []
+        
+        # Iterar a partir da linha 2 (ignorando cabeçalho)
+        for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+            if not row or row[0] is None:
+                continue # Linha vazia
+                
+            cargo_nome = str(row[0]).strip().upper()
+            if not cargo_nome:
+                erros.append(f"Linha {row_idx}: Nome do Cargo em branco.")
+                continue
+                
+            descricao = str(row[1]).strip() if len(row) > 1 and row[1] else ''
+                
+            cargo_obj = Cargo.query.filter(db.func.upper(Cargo.nome) == cargo_nome).first()
+            if cargo_obj:
+                if descricao:
+                    cargo_obj.descricao = descricao
+                registros_atualizados += 1
+            else:
+                novo_cargo = Cargo(nome=cargo_nome, descricao=descricao, ativo=True)
+                db.session.add(novo_cargo)
+                registros_adicionados += 1
+                
+        db.session.commit()
+        
+        msg = f"Importação concluída! {registros_adicionados} novos cargos criados e {registros_atualizados} atualizados."
+        if erros:
+            msg += f" Ocorreram {len(erros)} erros (linhas ignoradas)."
+            flash(msg, 'warning')
+        else:
+            flash(msg, 'success')
+            
+    except Exception as e:
+        flash(f"Erro ao ler o arquivo Excel: {str(e)}", 'danger')
+        
+    # Redireciona para a aba de cargos
+    return redirect(url_for('admin_vagas', aba='cargos'))
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

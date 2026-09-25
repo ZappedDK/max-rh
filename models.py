@@ -1,4 +1,4 @@
-﻿from datetime import datetime, timezone
+from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -153,6 +153,37 @@ class Anexo(db.Model):
     nome_original = db.Column(db.String(255), nullable=False)
     nome_salvo = db.Column(db.String(255), nullable=False)
     data_criacao = db.Column(db.DateTime, default=utc_now)
+
+class Cargo(db.Model):
+    __tablename__ = 'cargos'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(150), unique=True, nullable=False, index=True)
+    descricao = db.Column(db.Text)
+    ativo = db.Column(db.Boolean, default=True)
+    data_criacao = db.Column(db.DateTime, default=utc_now)
+    
+    vagas_loja = db.relationship('VagaLoja', backref='cargo', cascade='all, delete-orphan', lazy=True)
+    
+    def __repr__(self):
+        return f'<Cargo {self.nome}>'
+
+class VagaLoja(db.Model):
+    __tablename__ = 'vagas_loja'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    loja = db.Column(db.String(150), nullable=False)
+    cargo_id = db.Column(db.Integer, db.ForeignKey('cargos.id'), nullable=False)
+    vagas_total = db.Column(db.Integer, default=1, nullable=False)
+    vagas_preenchidas = db.Column(db.Integer, default=0, nullable=False)
+    data_criacao = db.Column(db.DateTime, default=utc_now)
+    
+    @property
+    def vagas_disponiveis(self):
+        return max(0, self.vagas_total - self.vagas_preenchidas)
+    
+    def __repr__(self):
+        return f'<VagaLoja {self.loja} - {self.cargo_id}>'
 
 class Configuracao(db.Model):
     __tablename__ = 'configuracoes'

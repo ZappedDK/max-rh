@@ -1,0 +1,672 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Controle de Vagas - MAX RH{% endblock %}
+
+{% block extra_head %}
+<style>
+  .vagas-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .vaga-card {
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: box-shadow 0.18s;
+  }
+  .vaga-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.09); }
+  .vaga-progress-bar {
+    height: 6px;
+    border-radius: 4px;
+    background: var(--admin-border);
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .vaga-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  .badge-disp {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-disp.ok   { background: rgba(16,185,129,0.12); color: #059669; }
+  .badge-disp.low  { background: rgba(245,158,11,0.12);  color: #d97706; }
+  .badge-disp.zero { background: rgba(239,68,68,0.12);   color: #dc2626; }
+
+  .cargo-row td { vertical-align: middle; }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: rgba(0,0,0,0.45);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--admin-card-bg);
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--admin-text-primary);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .loja-selector-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1.5px solid var(--admin-border);
+    background: var(--admin-card-bg);
+    color: var(--admin-text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s;
+    text-decoration: none;
+  }
+  .loja-selector-btn.active,
+  .loja-selector-btn:hover {
+    border-color: #2563eb;
+    background: rgba(37,99,235,0.07);
+    color: #2563eb;
+  }
+
+  /* Grid for Vagas List */
+  .vagas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  
+  /* Form Elements for Modals */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--admin-text-primary);
+  }
+  .form-input, .form-textarea, .form-select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--admin-border);
+    background: var(--admin-bg);
+    color: var(--admin-text-primary);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+  .form-input:focus, .form-textarea:focus, .form-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.15);
+    background: var(--admin-card-bg);
+  }
+  .form-textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="dashboard-header">
+  <div>
+    <h1 style="font-size: 1.6rem; color: var(--admin-text-primary); font-weight: 700;">Controle de Vagas</h1>
+    <p style="color: var(--admin-text-muted); font-size: 0.95rem; margin-top: 4px;">
+      Gerencie os cargos disponíveis e as vagas abertas por unidade
+    </p>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs-minimal-nav">
+  <button type="button" id="tabBtnUnidades" class="tab-minimal-btn active" onclick="alternarAba('unidades')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"></rect>
+      <rect x="14" y="3" width="7" height="7"></rect>
+      <rect x="14" y="14" width="7" height="7"></rect>
+      <rect x="3" y="14" width="7" height="7"></rect>
+    </svg>
+    <span>Cargos por Unidades</span>
+  </button>
+
+  <button type="button" id="tabBtnCargos" class="tab-minimal-btn" onclick="alternarAba('cargos')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2"/>
+      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+      <line x1="12" y1="12" x2="12" y2="16"/>
+      <line x1="10" y1="14" x2="14" y2="14"/>
+    </svg>
+    <span>Cadastro de Cargos</span>
+  </button>
+</div>
+
+<!-- TAB 1: CARGOS POR UNIDADE -->
+<div id="secaoUnidades">
+  <div style="display:flex;flex-direction:column;gap:20px;">
+
+    <!-- Filtros Inteligentes -->
+    <div class="card-box" style="margin-bottom: 4px;">
+      <form method="GET" action="{{ url_for('admin_vagas') }}">
+        <input type="hidden" name="aba" value="unidades">
+        <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+          
+          <!-- Unidades Checklist -->
+          <div style="flex: 1; min-width: 250px;">
+            <label class="form-label" style="margin-bottom: 8px; display: block; border-bottom: 1px solid var(--admin-border); padding-bottom: 6px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Filtrar por Unidades
+            </label>
+            <input type="text" placeholder="Pesquisar unidade..." oninput="filtrarLista('listaUnidades', this.value)" style="width: 100%; margin-bottom: 8px; padding: 6px 10px; font-size: 0.85rem; border: 1px solid var(--admin-border); border-radius: 6px; background: var(--admin-bg); color: var(--admin-text-primary);">
+            <div id="listaUnidades" style="max-height: 180px; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 8px;">
+              {% for loja in lojas %}
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--admin-text-secondary); cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='var(--admin-bg)'" onmouseout="this.style.background='transparent'">
+                <input type="checkbox" name="loja" value="{{ loja }}" {% if loja in lojas_selecionadas %}checked{% endif %} style="width:16px;height:16px;accent-color:#2563eb;">
+                {{ loja }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Cargos Checklist -->
+          <div style="flex: 1; min-width: 250px;">
+            <label class="form-label" style="margin-bottom: 8px; display: block; border-bottom: 1px solid var(--admin-border); padding-bottom: 6px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              Filtrar por Cargos
+            </label>
+            <input type="text" placeholder="Pesquisar cargo..." oninput="filtrarLista('listaCargos', this.value)" style="width: 100%; margin-bottom: 8px; padding: 6px 10px; font-size: 0.85rem; border: 1px solid var(--admin-border); border-radius: 6px; background: var(--admin-bg); color: var(--admin-text-primary);">
+            <div id="listaCargos" style="max-height: 180px; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 8px;">
+              {% for cargo in cargos %}
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--admin-text-secondary); cursor: pointer; padding: 4px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='var(--admin-bg)'" onmouseout="this.style.background='transparent'">
+                <input type="checkbox" name="cargo" value="{{ cargo.id }}" {% if cargo.id in cargos_selecionados %}checked{% endif %} style="width:16px;height:16px;accent-color:#2563eb;">
+                {{ cargo.nome }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; min-width: 200px;">
+            <button type="submit" class="btn btn-primary" style="display:flex; justify-content:center; align-items:center; gap:8px; width: 100%;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              Aplicar Filtros
+            </button>
+            <a href="{{ url_for('admin_vagas', aba='unidades') }}" class="btn btn-outline" style="display:flex; justify-content:center; align-items:center; gap:8px; width: 100%;">
+              Limpar Filtros
+            </a>
+            <button type="submit" formaction="{{ url_for('admin_vagas_exportar') }}" class="btn btn-outline" style="border-color:#10b981; color:#059669; display:flex; justify-content:center; align-items:center; gap:8px; width: 100%; background:transparent;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Exportar Excel
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- Resultados das Vagas -->
+    {% if vagas_loja %}
+    <div class="card-box" style="padding:0;overflow:hidden;">
+      <div style="padding:18px 20px 14px;border-bottom:1px solid var(--admin-border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--admin-text-muted);margin-bottom:2px;">Resultados da Busca</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--admin-text-primary);">{{ vagas_loja|length }} Vaga(s) Encontrada(s)</div>
+        </div>
+        {% if current_user.role == 'admin' %}
+        <button type="button" onclick="abrirModal('modalNovaVaga')" class="btn btn-primary" style="font-size:0.84rem;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar Cargo à Unidade
+        </button>
+        {% endif %}
+      </div>
+
+      <div style="padding:20px;">
+        {% for grupo_loja in vagas_loja|groupby('loja') %}
+        <div style="margin-bottom: 28px;">
+          <!-- Cabeçalho da Loja -->
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--admin-text-primary); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--admin-border); display: flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            {{ grupo_loja.grouper }}
+          </h3>
+          
+          <!-- Lista de Vagas da Loja -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            {% for vaga in grupo_loja.list %}
+              {% set pct = ((vaga.vagas_preenchidas / vaga.vagas_total) * 100)|int if vaga.vagas_total > 0 else 0 %}
+              {% set disp = vaga.vagas_disponiveis %}
+              <div style="display:flex; align-items:center; padding: 12px 16px; background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='var(--admin-card-bg)'" onmouseout="this.style.background='var(--admin-bg)'">
+                
+                <!-- Cargo Name -->
+                <div style="flex: 2; min-width: 180px;">
+                  <div style="font-weight: 700; color: var(--admin-text-primary); font-size: 0.95rem;">
+                    {{ vaga.cargo.nome }}
+                  </div>
+                </div>
+
+                <!-- Stats / Progress -->
+                <div style="flex: 1.5; display: flex; flex-direction: column; justify-content: center; min-width: 150px; padding: 0 16px;">
+                  <div style="font-size: 0.8rem; color: var(--admin-text-muted); font-weight: 600; margin-bottom: 4px;">
+                    {{ vaga.vagas_preenchidas }} de {{ vaga.vagas_total }} vagas preenchidas
+                  </div>
+                  <div class="vaga-progress-bar" style="margin: 0; height: 6px; background: rgba(0,0,0,0.05);">
+                    <div class="vaga-progress-fill" style="width:{{ pct }}%;background:{% if disp > 1 %}#10b981{% elif disp == 1 %}#f59e0b{% else %}#ef4444{% endif %};"></div>
+                  </div>
+                </div>
+
+                <!-- Badge Disp -->
+                <div style="flex: 1; text-align: center; min-width: 110px;">
+                  <span class="badge-disp {% if disp > 1 %}ok{% elif disp == 1 %}low{% else %}zero{% endif %}" style="font-size: 0.8rem; padding: 4px 12px;">
+                    {% if disp == 0 %}Esgotado{% elif disp == 1 %}1 disponível{% else %}{{ disp }} disponíveis{% endif %}
+                  </span>
+                </div>
+
+                <!-- Actions -->
+                {% if current_user.role == 'admin' %}
+                <div style="display: flex; gap: 8px; justify-content: flex-end; min-width: 90px;">
+                  <button type="button" title="Editar quantidade" 
+                    data-id="{{ vaga.id }}" data-cargo="{{ vaga.cargo.nome }}" data-total="{{ vaga.vagas_total }}" 
+                    onclick="abrirEditarVaga(this)"
+                    style="background:rgba(37,99,235,0.1);border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:#2563eb;display:inline-flex;align-items:center;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <form method="POST" action="{{ url_for('admin_vagas_loja_excluir', id=vaga.id) }}" onsubmit="return confirm('Remover vagas de {{ vaga.cargo.nome }} desta loja?')" style="margin:0;">
+                    <button type="submit" title="Remover" style="background:rgba(239,68,68,0.1);border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:#dc2626;display:inline-flex;align-items:center;">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                    </button>
+                  </form>
+                </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <!-- Estado: Nenhum resultado -->
+    <div class="card-box" style="text-align:center;padding:60px 30px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:56px;height:56px;margin-bottom:14px;color:#2563eb;opacity:0.5;">
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <p style="font-size:1.1rem;font-weight:600;color:var(--admin-text-primary);margin-bottom:8px;">Nenhuma vaga encontrada</p>
+      <p style="font-size:0.95rem;color:var(--admin-text-muted);">Tente ajustar os filtros de Unidade e Cargo acima, ou clique em Adicionar Cargo à Unidade.</p>
+      {% if current_user.role == 'admin' %}
+      <div style="margin-top: 16px;">
+        <button type="button" onclick="abrirModal('modalNovaVaga')" class="btn btn-primary" style="font-size:0.84rem;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar Cargo à Unidade
+        </button>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- TAB 2: CADASTRO DE CARGOS -->
+<div id="secaoCargos" style="display: none;">
+  <div class="card-box" style="padding: 0; overflow: hidden;">
+    <div style="padding: 18px 20px 14px; border-bottom: 1px solid var(--admin-border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--admin-text-muted);margin-bottom:2px;">Banco de Cargos</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--admin-text-primary);">{{ cargos|length }} cargo(s) base cadastrado(s) no sistema</div>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <input type="text" id="buscaCargo" placeholder="Buscar cargo..." oninput="filtrarCargos(this.value)"
+          style="padding:8px 12px;border:1px solid var(--admin-border);border-radius:8px;background:var(--admin-bg);color:var(--admin-text-primary);font-size:0.88rem;width:200px;">
+        {% if current_user.role == 'admin' %}
+        <button type="button" onclick="abrirModal('modalImportarVagas')" class="btn btn-outline" style="display:inline-flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Importar Cargos
+        </button>
+        <button type="button" onclick="abrirModal('modalNovoCargo')" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Criar Cargo Base
+        </button>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="max-height: 600px; overflow-y: auto; padding: 20px;">
+      <table class="data-table" id="tabelaCargos">
+        <thead>
+          <tr>
+            <th>Nome do Cargo</th>
+            <th>Descrição Padrão</th>
+            {% if current_user.role == 'admin' %}
+            <th style="width:100px; text-align:center;">Ações</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for cargo in cargos %}
+          <tr class="cargo-row" data-nome="{{ cargo.nome|lower }}">
+            <td style="font-weight:600;color:var(--admin-text-primary);font-size:0.95rem;">{{ cargo.nome }}</td>
+            <td style="font-size:0.88rem;color:var(--admin-text-muted);">
+              {% if cargo.descricao %}
+                {{ cargo.descricao }}
+              {% else %}
+                <span style="opacity: 0.5;">Sem descrição cadastrada</span>
+              {% endif %}
+            </td>
+            {% if current_user.role == 'admin' %}
+            <td style="text-align:center;">
+              <div style="display:inline-flex;gap:6px;">
+                <button type="button" title="Editar" 
+                  data-id="{{ cargo.id }}" 
+                  data-nome="{{ cargo.nome }}" 
+                  data-desc="{{ cargo.descricao or '' }}"
+                  onclick="abrirEditar(this)"
+                  style="background:rgba(37,99,235,0.1);border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:#2563eb;display:inline-flex;align-items:center;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button type="button" title="Excluir" 
+                  data-id="{{ cargo.id }}"
+                  data-nome="{{ cargo.nome }}"
+                  onclick="confirmarExcluir(this)"
+                  style="background:rgba(239,68,68,0.1);border:none;border-radius:6px;padding:6px 10px;cursor:pointer;color:#dc2626;display:inline-flex;align-items:center;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </button>
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="3" style="text-align:center;color:var(--admin-text-muted);padding:30px;">Nenhum cargo cadastrado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== MODAIS (SOMENTE ADMIN) ===== -->
+{% if current_user.role == 'admin' %}
+
+<!-- Modal: Novo Cargo -->
+<div id="modalNovoCargo" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Criar Novo Cargo Base
+    </div>
+    <form method="POST" action="{{ url_for('admin_vagas_cargo_novo') }}">
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">Nome do Cargo <span style="color:#ef4444;">*</span></label>
+        <input type="text" name="nome" class="form-input" placeholder="Ex: OPERADOR DE CAIXA" required style="background:var(--admin-bg);color:var(--admin-text-primary);border-color:var(--admin-border);">
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">Descrição das Atividades</label>
+        <textarea name="descricao" class="form-textarea" placeholder="Descreva as principais responsabilidades deste cargo..." rows="4" style="background:var(--admin-bg);color:var(--admin-text-primary);border-color:var(--admin-border);"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Criar Cargo</button>
+        <button type="button" onclick="fecharModal('modalNovoCargo')" class="btn btn-outline" style="flex:1;">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Editar Cargo -->
+<div id="modalEditarCargo" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Editar Cargo Base
+    </div>
+    <form method="POST" id="formEditarCargo">
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">Nome do Cargo</label>
+        <input type="text" name="nome" id="editCargoNome" class="form-input" required style="background:var(--admin-bg);color:var(--admin-text-primary);border-color:var(--admin-border);">
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">Descrição das Atividades</label>
+        <textarea name="descricao" id="editCargoDesc" class="form-textarea" rows="4" style="background:var(--admin-bg);color:var(--admin-text-primary);border-color:var(--admin-border);"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Salvar Alterações</button>
+        <button type="button" onclick="fecharModal('modalEditarCargo')" class="btn btn-outline" style="flex:1;">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Excluir Cargo (form hidden) -->
+<form method="POST" id="formExcluirCargo" style="display:none;"></form>
+
+<!-- Modal: Nova Vaga na Loja -->
+<div id="modalNovaVaga" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      Vincular Cargo a uma Unidade
+    </div>
+    <form method="POST" action="{{ url_for('admin_vagas_loja_nova') }}">
+      <div class="form-group">
+        <label class="form-label">Unidade <span style="color:#ef4444;">*</span></label>
+        <select name="loja" class="form-select" required>
+          <option value="">Selecione a unidade...</option>
+          {% for loja in lojas %}
+          <option value="{{ loja }}" {% if loja in lojas_selecionadas %}selected{% endif %}>{{ loja }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cargo <span style="color:#ef4444;">*</span></label>
+        <select name="cargo_id" class="form-select" required>
+          <option value="">Selecione o cargo...</option>
+          {% for cargo in cargos %}
+          <option value="{{ cargo.id }}">{{ cargo.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">Quantidade de Vagas <span style="color:#ef4444;">*</span></label>
+        <input type="number" name="vagas_total" class="form-input" value="1" min="1" max="99" required>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Confirmar</button>
+        <button type="button" onclick="fecharModal('modalNovaVaga')" class="btn btn-outline" style="flex:1;">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Editar Vaga -->
+<div id="modalEditarVaga" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Editar Vagas na Unidade
+    </div>
+    <p id="editVagaCargo" style="font-size:0.95rem;font-weight:700;color:var(--admin-text-primary);margin-bottom:16px;"></p>
+    <form method="POST" id="formEditarVaga">
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">Total de Vagas Oficiais</label>
+        <input type="number" name="vagas_total" id="editVagaTotal" class="form-input" min="1" max="99" required style="background:var(--admin-bg);color:var(--admin-text-primary);border-color:var(--admin-border);">
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Salvar Quantidade</button>
+        <button type="button" onclick="fecharModal('modalEditarVaga')" class="btn btn-outline" style="flex:1;">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Importar Vagas -->
+<div id="modalImportarVagas" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      Importar Cargos Base (Planilha)
+    </div>
+    <p style="font-size:0.9rem; color:var(--admin-text-muted); margin-bottom:16px;">
+      Faça o upload de uma planilha Excel com as colunas <b>Nome do Cargo</b> e <b>Descrição (Opcional)</b>.
+    </p>
+    <div style="margin-bottom:20px;">
+      <a href="{{ url_for('admin_vagas_template') }}" style="font-size:0.85rem; color:#2563eb; text-decoration:underline;">Baixar Modelo de Planilha</a>
+    </div>
+    <form method="POST" action="{{ url_for('admin_vagas_importar') }}" enctype="multipart/form-data">
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">Arquivo Excel (.xlsx)</label>
+        <input type="file" name="file" accept=".xlsx, .xls" required style="background:var(--admin-bg);color:var(--admin-text-primary);border:1px dashed var(--admin-border);padding:10px;border-radius:8px;width:100%;">
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Processar Importação</button>
+        <button type="button" onclick="fecharModal('modalImportarVagas')" class="btn btn-outline" style="flex:1;">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function alternarAba(aba) {
+    const tabUnidades = document.getElementById('tabBtnUnidades');
+    const tabCargos = document.getElementById('tabBtnCargos');
+    const secUnidades = document.getElementById('secaoUnidades');
+    const secCargos = document.getElementById('secaoCargos');
+
+    if (aba === 'cargos') {
+      tabUnidades.classList.remove('active');
+      tabCargos.classList.add('active');
+      secUnidades.style.display = 'none';
+      secCargos.style.display = 'block';
+      // URL update state
+      window.history.replaceState(null, null, "?aba=cargos");
+    } else {
+      tabCargos.classList.remove('active');
+      tabUnidades.classList.add('active');
+      secCargos.style.display = 'none';
+      secUnidades.style.display = 'block';
+      
+      const lojaAtual = new URLSearchParams(window.location.search).get('loja');
+      if (lojaAtual) {
+         window.history.replaceState(null, null, "?loja=" + lojaAtual + "&aba=unidades");
+      } else {
+         window.history.replaceState(null, null, "?aba=unidades");
+      }
+    }
+  }
+
+  // Verifica aba na URL para restaurar estado correto
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('aba') === 'cargos') {
+    alternarAba('cargos');
+  } else {
+    alternarAba('unidades');
+  }
+
+  function abrirModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function fecharModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target === el) fecharModal(el.id);
+    });
+  });
+
+  // Edit Cargo using data attributes
+  function abrirEditar(btn) {
+    const id = btn.getAttribute('data-id');
+    const nome = btn.getAttribute('data-nome');
+    const desc = btn.getAttribute('data-desc');
+    
+    document.getElementById('editCargoNome').value = nome;
+    document.getElementById('editCargoDesc').value = desc;
+    document.getElementById('formEditarCargo').action = `/admin/vagas/cargo/${id}/editar`;
+    abrirModal('modalEditarCargo');
+  }
+
+  function confirmarExcluir(btn) {
+    const id = btn.getAttribute('data-id');
+    const nome = btn.getAttribute('data-nome');
+
+    if (confirm(`Excluir o cargo "${nome}"?\n\nEsta ação só é permitida se não houver candidatos pendentes, em análise, a contratar ou no banco de talentos para ele.`)) {
+      const form = document.getElementById('formExcluirCargo');
+      form.action = `/admin/vagas/cargo/${id}/excluir`;
+      form.submit();
+    }
+  }
+
+  function abrirEditarVaga(btn) {
+    const id = btn.getAttribute('data-id');
+    const cargo = btn.getAttribute('data-cargo');
+    const total = btn.getAttribute('data-total');
+
+    document.getElementById('editVagaCargo').textContent = cargo;
+    document.getElementById('editVagaTotal').value = total;
+    document.getElementById('formEditarVaga').action = `/admin/vagas/loja/${id}/editar`;
+    abrirModal('modalEditarVaga');
+  }
+
+  function filtrarLista(listaId, termo) {
+    const lista = document.getElementById(listaId);
+    if (!lista) return;
+    const labels = lista.getElementsByTagName('label');
+    const t = termo.toLowerCase();
+    for (let i = 0; i < labels.length; i++) {
+      const texto = labels[i].textContent || labels[i].innerText;
+      if (texto.toLowerCase().indexOf(t) > -1) {
+        labels[i].style.display = 'flex';
+      } else {
+        labels[i].style.display = 'none';
+      }
+    }
+  }
+
+  function filtrarCargos(q) {
+    const rows = document.querySelectorAll('#tabelaCargos .cargo-row');
+    const termo = q.toLowerCase();
+    rows.forEach(row => {
+      row.style.display = row.dataset.nome.includes(termo) ? '' : 'none';
+    });
+  }
+</script>
+{% endblock %}
