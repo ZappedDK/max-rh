@@ -359,3 +359,137 @@ def testar_configuracao_smtp(cfg_teste=None):
         if "timed out" in err_str.lower() or "timeout" in err_str.lower():
             return False, f"Tempo limite de conexão esgotado ao tentar alcançar '{smtp_server}:{smtp_port}'. Verifique a porta e se o servidor exige SSL (porta 465) ou TLS (porta 587).", destinatarios
         return False, f"Erro ao testar envio de e-mail: {err_str}", destinatarios
+
+
+def gerar_html_notificacao_candidato(nome, cargo, loja, status, mensagem_extra=''):
+    """Gera HTML corporativo para notificar o candidato sobre o resultado do processo seletivo."""
+    
+    if status == 'contratar':
+        cor_topo = '#16a34a'
+        titulo_status = 'Parabéns! Você foi selecionado(a)!'
+        icone = '&#10003;'
+        cor_badge = '#dcfce7'
+        cor_badge_texto = '#166534'
+        badge_texto = 'APROVADO(A)'
+        texto_padrao = (
+            f'Temos o prazer de informar que você foi selecionado(a) para a vaga de '
+            f'<strong>{cargo}</strong> na unidade <strong>{loja}</strong>.<br><br>'
+            f'Em breve, nosso departamento de Recursos Humanos entrará em contato '
+            f'para orientá-lo(a) sobre os próximos passos do processo de admissão.'
+        )
+    else:
+        cor_topo = '#64748b'
+        titulo_status = 'Agradecemos sua participação'
+        icone = '&#9679;'
+        cor_badge = '#f1f5f9'
+        cor_badge_texto = '#475569'
+        badge_texto = 'NÃO SELECIONADO(A)'
+        texto_padrao = (
+            f'Agradecemos muito o seu interesse na vaga de <strong>{cargo}</strong> '
+            f'na unidade <strong>{loja}</strong>.<br><br>'
+            f'Infelizmente, não foi possível prosseguir com a sua candidatura neste momento. '
+            f'No entanto, o seu currículo ficará em nosso banco de talentos para futuras oportunidades.'
+        )
+
+    msg_extra_html = ''
+    if mensagem_extra and mensagem_extra.strip():
+        msg_extra_html = f'''
+            <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px 16px; margin-top: 18px; font-size: 14px; color: #92400e;">
+              <strong>Mensagem adicional do RH:</strong><br>
+              {mensagem_extra.strip().replace(chr(10), "<br>")}
+            </div>
+        '''
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0f172a; margin: 0; padding: 24px; color: #1e293b;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        
+        <tr>
+          <td style="background: {cor_topo}; padding: 26px 30px; text-align: center; color: #ffffff;">
+            <h1 style="margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 1.5px;">MAX SUPERMERCADOS</h1>
+            <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Processo Seletivo</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 30px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <span style="display: inline-block; background: {cor_badge}; color: {cor_badge_texto}; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">{badge_texto}</span>
+            </div>
+            
+            <h2 style="margin: 0 0 6px 0; font-size: 20px; color: #0f172a; font-weight: 800; text-align: center;">{titulo_status}</h2>
+            <p style="margin: 0 0 4px 0; font-size: 15px; color: #475569; text-align: center;">Olá, <strong>{nome}</strong>!</p>
+            
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; margin: 20px 0; font-size: 14px; color: #334155; line-height: 1.7;">
+              {texto_padrao}
+            </div>
+            
+            {msg_extra_html}
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background-color: #f8fafc; padding: 16px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8;">
+            Este é um e-mail automático do Sistema MAX RH.<br>
+            Por favor, não responda a este e-mail.
+          </td>
+        </tr>
+
+      </table>
+    </body>
+    </html>
+    """
+    return html
+
+
+def enviar_email_candidato(app, email_dest, nome, cargo, loja, status, mensagem_extra=''):
+    """Envia e-mail de notificação ao candidato sobre o resultado do processo seletivo (background)."""
+    def tarefa():
+        with app.app_context():
+            try:
+                cfg = get_config_dict()
+                ativo = cfg.get('email_ativo', '0') == '1'
+                if not ativo:
+                    logger.info('Envio de e-mail desativado nas configurações.')
+                    return False
+
+                smtp_server = cfg.get('smtp_server', '').strip()
+                smtp_port = cfg.get('smtp_port', '587').strip()
+                smtp_user = cfg.get('smtp_user', '').strip()
+                smtp_pass = cfg.get('smtp_password', '').strip()
+                cripto = cfg.get('smtp_criptografia', 'tls').strip()
+                remetente_nome = cfg.get('smtp_remetente_nome', 'MAX Supermercados RH').strip()
+
+                if not smtp_server or not smtp_user or not email_dest:
+                    logger.warning('Configurações SMTP ou e-mail do candidato incompletos.')
+                    return False
+
+                if status == 'contratar':
+                    assunto = f"Parabéns {nome}! Você foi selecionado(a) - MAX Supermercados"
+                else:
+                    assunto = f"Resultado do Processo Seletivo - MAX Supermercados"
+
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = assunto
+                msg['From'] = formataddr((remetente_nome, smtp_user))
+                msg['To'] = email_dest
+
+                html = gerar_html_notificacao_candidato(nome, cargo, loja, status, mensagem_extra)
+                msg.attach(MIMEText(html, 'html'))
+
+                server = criar_conexao_smtp(smtp_server, smtp_port, smtp_user, smtp_pass, cripto)
+                server.sendmail(smtp_user, [email_dest], msg.as_string())
+                server.quit()
+
+                logger.info(f"E-mail de {status} enviado para candidato: {email_dest}")
+                return True
+            except Exception as e:
+                logger.error(f"Erro ao enviar e-mail para candidato {email_dest}: {e}")
+                return False
+
+    thread = threading.Thread(target=tarefa)
+    thread.daemon = True
+    thread.start()

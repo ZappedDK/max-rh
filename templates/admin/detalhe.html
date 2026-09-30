@@ -42,42 +42,44 @@
     </svg>
     Decisão do Recrutador / RH:
   </div>
-  <form method="POST" action="{{ url_for('admin_alterar_status', id=candidato.id) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
-    <button type="submit" name="status" value="contratar" class="btn btn-success" style="padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <button type="button" onclick="abrirModalStatus('contratar')" class="btn btn-success" style="padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
         <polyline points="20 6 9 17 4 12"></polyline>
       </svg>
       Contratar
     </button>
-    <button type="submit" name="status" value="nao_contratar" class="btn btn-danger" style="padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+    <button type="button" onclick="abrirModalStatus('nao_contratar')" class="btn btn-danger" style="padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
       </svg>
       Não Contratar
     </button>
-    <button type="submit" name="status" value="em_analise" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
-      </svg>
-      Em Análise
-    </button>
-    <button type="submit" name="status" value="banco_talentos" class="btn" style="background: #9333ea; color: white; padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-      </svg>
-      Banco de Talentos
-    </button>
-    <button type="submit" name="status" value="pendente" class="btn btn-outline" style="padding: 8px 14px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
-      Pendente
-    </button>
-  </form>
+    <form method="POST" action="{{ url_for('admin_alterar_status', id=candidato.id) }}" style="display: contents;">
+      <button type="submit" name="status" value="em_analise" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        Em Análise
+      </button>
+      <button type="submit" name="status" value="banco_talentos" class="btn" style="background: #9333ea; color: white; padding: 8px 16px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        Banco de Talentos
+      </button>
+      <button type="submit" name="status" value="pendente" class="btn btn-outline" style="padding: 8px 14px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        Pendente
+      </button>
+    </form>
+  </div>
 </div>
 
 <!-- Layout em Grid -->
@@ -127,7 +129,7 @@
         </div>
         <div>
           <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Naturalidade</span>
-          <strong>{{ candidato.cidade_nascimento or '-' }} / {{ candidato.estado_nascimento or '-' }}</strong>
+          <strong>{{ candidato.cidade_nascimento|nome_proprio or '-' }} / {{ candidato.estado_nascimento or '-' }}</strong>
         </div>
       </div>
 
@@ -156,11 +158,11 @@
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
         <div>
           <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Nome da Mãe</span>
-          <strong>{{ candidato.nome_mae or '-' }}</strong>
+          <strong>{{ candidato.nome_mae|nome_proprio or '-' }}</strong>
         </div>
         <div>
           <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Estado Civil / Companheiro</span>
-          <strong>{{ candidato.estado_civil or '-' }} {% if candidato.companheiro %}({{ candidato.companheiro }}){% endif %}</strong>
+          <strong>{{ candidato.estado_civil or '-' }} {% if candidato.companheiro %}({{ candidato.companheiro|nome_proprio }}){% endif %}</strong>
         </div>
         <div>
           <span style="font-size: 0.8rem; color: var(--admin-text-muted); display: block;">Filhos</span>
@@ -485,4 +487,247 @@
   </div>
 
 </div>
+
+<!-- ============================================= -->
+<!-- MODAL: Confirmação de Status + Notificação    -->
+<!-- ============================================= -->
+<style>
+.modal-status-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-status-overlay.open { display: flex; }
+.modal-status-box {
+  background: var(--admin-card-bg);
+  border-radius: 16px;
+  padding: 0;
+  width: 100%;
+  max-width: 560px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+.modal-status-header {
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.modal-status-header.contratar { background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; }
+.modal-status-header.nao_contratar { background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; }
+.modal-status-body { padding: 24px 28px; }
+.modal-status-footer { padding: 16px 28px; border-top: 1px solid var(--admin-border); display: flex; gap: 10px; flex-wrap: wrap; }
+
+.notif-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+}
+.notif-option:hover { border-color: var(--primary); background: rgba(37,99,235,0.05); }
+.notif-option.selected { border-color: var(--primary); background: rgba(37,99,235,0.08); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+.notif-option input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2563eb; flex-shrink: 0; }
+.notif-option .notif-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.notif-option .notif-info { flex: 1; }
+.notif-option .notif-title { font-weight: 700; font-size: 0.92rem; color: var(--admin-text-primary); }
+.notif-option .notif-desc { font-size: 0.8rem; color: var(--admin-text-muted); margin-top: 2px; }
+</style>
+
+<div id="modalConfirmarStatus" class="modal-status-overlay">
+  <div class="modal-status-box">
+    <!-- Header dinâmico -->
+    <div id="modalStatusHeader" class="modal-status-header contratar">
+      <svg id="modalStatusIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; flex-shrink: 0;">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <div>
+        <div id="modalStatusTitulo" style="font-size: 1.15rem; font-weight: 800;">Confirmar Contratação</div>
+        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 2px;">{{ candidato.nome_completo }}</div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-status-body">
+      <!-- Info do candidato -->
+      <div style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.88rem;">
+          <div>
+            <span style="color: var(--admin-text-muted);">Cargo:</span>
+            <strong style="color: var(--admin-text-primary); margin-left: 4px;">{{ candidato.cargo_pretendido }}</strong>
+          </div>
+          <div>
+            <span style="color: var(--admin-text-muted);">Unidade:</span>
+            <strong style="color: var(--admin-text-primary); margin-left: 4px;">{{ candidato.loja_proxima }}</strong>
+          </div>
+        </div>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.85rem; margin-top: 8px;">
+          <div>
+            <span style="color: var(--admin-text-muted);">Celular:</span>
+            <span style="color: var(--admin-text-primary); margin-left: 4px;">{{ candidato.celular or 'Não informado' }}</span>
+          </div>
+          <div>
+            <span style="color: var(--admin-text-muted);">E-mail:</span>
+            <span style="color: var(--admin-text-primary); margin-left: 4px;">{{ candidato.email or 'Não informado' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opções de notificação -->
+      <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--admin-text-muted); margin-bottom: 10px;">
+        Deseja notificar o candidato?
+      </div>
+
+      <label class="notif-option" id="optEmail" onclick="toggleNotif('chkEmail')">
+        <input type="checkbox" id="chkEmail" onclick="event.stopPropagation(); updateNotifStyle()">
+        <div class="notif-icon" style="background: rgba(37,99,235,0.1);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="notif-info">
+          <div class="notif-title">Enviar E-mail</div>
+          <div class="notif-desc">{% if candidato.email %}Enviar para {{ candidato.email }}{% else %}Candidato sem e-mail cadastrado{% endif %}</div>
+        </div>
+      </label>
+
+      <label class="notif-option" id="optWhatsapp" onclick="toggleNotif('chkWhatsapp')">
+        <input type="checkbox" id="chkWhatsapp" onclick="event.stopPropagation(); updateNotifStyle()">
+        <div class="notif-icon" style="background: rgba(37,211,102,0.12);">
+          <svg viewBox="0 0 24 24" fill="#25D366" style="width:20px;height:20px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </div>
+        <div class="notif-info">
+          <div class="notif-title">Abrir WhatsApp</div>
+          <div class="notif-desc">{% if candidato.celular %}Enviar mensagem para {{ candidato.celular }}{% else %}Candidato sem celular cadastrado{% endif %}</div>
+        </div>
+      </label>
+
+      <!-- Mensagem extra (opcional) -->
+      <div style="margin-top: 14px;">
+        <label style="font-size: 0.82rem; font-weight: 600; color: var(--admin-text-secondary); margin-bottom: 6px; display: block;">Mensagem adicional (opcional)</label>
+        <textarea id="mensagemExtra" rows="3" placeholder="Ex: Comparecer dia 10/10 às 9h com documentos..." style="width: 100%; padding: 10px 12px; font-size: 0.88rem; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text-primary); resize: vertical; font-family: inherit;"></textarea>
+      </div>
+    </div>
+
+    <!-- Footer com ações -->
+    <div class="modal-status-footer">
+      <form method="POST" action="{{ url_for('admin_alterar_status', id=candidato.id) }}" id="formStatusConfirm" style="display: contents;">
+        <input type="hidden" name="status" id="hiddenStatus" value="">
+        <input type="hidden" name="notificacao" id="hiddenNotificacao" value="">
+        <input type="hidden" name="mensagem_extra" id="hiddenMensagemExtra" value="">
+        <button type="submit" id="btnConfirmarStatus" class="btn btn-success" style="flex: 1; min-width: 150px; justify-content: center;" onclick="prepararEnvio()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polyline points="20 6 9 17 4 12"/></svg>
+          Confirmar
+        </button>
+      </form>
+      <button type="button" class="btn btn-outline" style="flex: 1; min-width: 120px; justify-content: center;" onclick="fecharModalStatus()">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dados do candidato para montar links
+  const CANDIDATO_CELULAR = {{ candidato.celular|tojson }};
+  const CANDIDATO_NOME = {{ candidato.nome_completo|tojson }};
+  const CANDIDATO_CARGO = {{ candidato.cargo_pretendido|tojson }};
+  const CANDIDATO_LOJA = {{ candidato.loja_proxima|tojson }};
+  let statusAtual = '';
+
+  function abrirModalStatus(status) {
+    statusAtual = status;
+    document.getElementById('hiddenStatus').value = status;
+    
+    const header = document.getElementById('modalStatusHeader');
+    const titulo = document.getElementById('modalStatusTitulo');
+    const icon = document.getElementById('modalStatusIcon');
+    const btnConfirmar = document.getElementById('btnConfirmarStatus');
+    
+    header.className = 'modal-status-header ' + status;
+    
+    if (status === 'contratar') {
+      titulo.textContent = 'Confirmar Contratação';
+      icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+      btnConfirmar.className = 'btn btn-success';
+      btnConfirmar.querySelector('svg').innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+    } else {
+      titulo.textContent = 'Confirmar Não Contratação';
+      icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>';
+      btnConfirmar.className = 'btn btn-danger';
+      btnConfirmar.querySelector('svg').innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+    }
+    
+    // Reset checkboxes
+    document.getElementById('chkEmail').checked = false;
+    document.getElementById('chkWhatsapp').checked = false;
+    document.getElementById('mensagemExtra').value = '';
+    updateNotifStyle();
+    
+    // Abrir
+    document.getElementById('modalConfirmarStatus').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  
+  function fecharModalStatus() {
+    document.getElementById('modalConfirmarStatus').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  
+  function toggleNotif(checkboxId) {
+    const cb = document.getElementById(checkboxId);
+    cb.checked = !cb.checked;
+    updateNotifStyle();
+  }
+  
+  function updateNotifStyle() {
+    const emailChecked = document.getElementById('chkEmail').checked;
+    const wppChecked = document.getElementById('chkWhatsapp').checked;
+    document.getElementById('optEmail').classList.toggle('selected', emailChecked);
+    document.getElementById('optWhatsapp').classList.toggle('selected', wppChecked);
+  }
+  
+  function prepararEnvio() {
+    const emailChecked = document.getElementById('chkEmail').checked;
+    const wppChecked = document.getElementById('chkWhatsapp').checked;
+    const msgExtra = document.getElementById('mensagemExtra').value.trim();
+    
+    let notif = '';
+    if (emailChecked && wppChecked) notif = 'ambos';
+    else if (emailChecked) notif = 'email';
+    else if (wppChecked) notif = 'whatsapp';
+    
+    document.getElementById('hiddenNotificacao').value = notif;
+    document.getElementById('hiddenMensagemExtra').value = msgExtra;
+    
+    // Se WhatsApp selecionado, abrir em nova aba
+    if (wppChecked && CANDIDATO_CELULAR) {
+      const celDigitos = CANDIDATO_CELULAR.replace(/\D/g, '');
+      let textoWpp = '';
+      if (statusAtual === 'contratar') {
+        textoWpp = `Olá ${CANDIDATO_NOME}! Tudo bem? Aqui é do RH do MAX Supermercados. Temos o prazer de informar que você foi selecionado(a) para a vaga de *${CANDIDATO_CARGO}* na unidade *${CANDIDATO_LOJA}*! Em breve entraremos em contato com mais detalhes sobre a admissão.`;
+      } else {
+        textoWpp = `Olá ${CANDIDATO_NOME}! Aqui é do RH do MAX Supermercados. Agradecemos muito o seu interesse na vaga de *${CANDIDATO_CARGO}*. Infelizmente, não foi possível dar continuidade à sua candidatura neste momento, mas seu currículo ficará no nosso banco de talentos para futuras oportunidades.`;
+      }
+      if (msgExtra) {
+        textoWpp += `\n\n${msgExtra}`;
+      }
+      const waUrl = `https://wa.me/55${celDigitos}?text=${encodeURIComponent(textoWpp)}`;
+      window.open(waUrl, '_blank');
+    }
+  }
+  
+  // Fechar ao clicar fora
+  document.getElementById('modalConfirmarStatus').addEventListener('click', function(e) {
+    if (e.target === this) fecharModalStatus();
+  });
+</script>
+
 {% endblock %}

@@ -125,7 +125,7 @@
   <tr>
     <td style="width: 25%;"><strong>Sexo:</strong> {{ candidato.sexo or '-' }}</td>
     <td style="width: 25%;"><strong>Data de Nascimento:</strong> {{ candidato.data_nascimento }}</td>
-    <td colspan="2"><strong>Cidade e Estado de Nascimento:</strong> {{ candidato.cidade_nascimento or '-' }} / {{ candidato.estado_nascimento or '-' }}</td>
+    <td colspan="2"><strong>Cidade e Estado de Nascimento:</strong> {{ candidato.cidade_nascimento|nome_proprio or '-' }} / {{ candidato.estado_nascimento or '-' }}</td>
   </tr>
   <tr>
     <td colspan="2"><strong>Endereço:</strong> {{ candidato.endereco or '-' }}</td>
@@ -146,11 +146,11 @@
     <td colspan="4"><strong>E-mail:</strong> {{ candidato.email or '-' }}</td>
   </tr>
   <tr>
-    <td colspan="4"><strong>Nome da Mãe:</strong> {{ candidato.nome_mae or '-' }}</td>
+    <td colspan="4"><strong>Nome da Mãe:</strong> {{ candidato.nome_mae|nome_proprio or '-' }}</td>
   </tr>
   <tr>
     <td><strong>Estado Civil:</strong> {{ candidato.estado_civil or '-' }}</td>
-    <td><strong>Companheiro(a):</strong> {{ candidato.companheiro or '-' }}</td>
+    <td><strong>Companheiro(a):</strong> {{ candidato.companheiro|nome_proprio or '-' }}</td>
     <td><strong>Profissão:</strong> {{ candidato.profissao or '-' }}</td>
     <td><strong>Possui filhos:</strong> {{ candidato.possui_filhos }} ({{ candidato.qtd_filhos }})</td>
   </tr>

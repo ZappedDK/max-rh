@@ -10,8 +10,8 @@ from sqlalchemy.exc import IntegrityError
 from config import Config
 from models import db, User, Candidato, ExperienciaProfissional, Observacao, Anexo, Configuracao, Cargo, VagaLoja
 from init_db import inicializar_banco
-from utils import validar_cpf, formatar_cpf, limpar_apenas_digitos, gerar_protocolo, gerar_qrcode_svg_data, allowed_file
-from email_service import notificar_rh_novo_candidato, testar_configuracao_smtp
+from utils import validar_cpf, formatar_cpf, limpar_apenas_digitos, gerar_protocolo, gerar_qrcode_svg_data, allowed_file, formatar_nome_proprio
+from email_service import notificar_rh_novo_candidato, testar_configuracao_smtp, enviar_email_candidato
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -66,6 +66,10 @@ def inject_globals():
 @app.template_filter('formatar_cpf')
 def format_cpf_filter(s):
     return formatar_cpf(s)
+
+@app.template_filter('nome_proprio')
+def format_nome_proprio_filter(s):
+    return formatar_nome_proprio(s)
 
 # ==========================================
 # ROTAS DO CANDIDATO (MOBILE FIRST)
@@ -127,7 +131,7 @@ def candidatura():
                 idade=idade,
                 sexo=request.form.get('sexo'),
                 data_nascimento=request.form.get('data_nascimento', '').strip(),
-                cidade_nascimento=request.form.get('cidade_nascimento', '').strip().upper(),
+                cidade_nascimento=formatar_nome_proprio(request.form.get('cidade_nascimento', '')),
                 estado_nascimento=request.form.get('estado_nascimento', '').strip().upper(),
                 
                 # Endereço
@@ -147,7 +151,7 @@ def candidatura():
                 email=request.form.get('email', '').strip().lower(),
                 
                 # Família
-                nome_mae=request.form.get('nome_mae', '').strip().upper(),
+                nome_mae=formatar_nome_proprio(request.form.get('nome_mae', '')),
                 estado_civil=request.form.get('estado_civil'),
                 companheiro=request.form.get('companheiro', '').strip().upper(),
                 profissao=request.form.get('profissao', '').strip(),
@@ -413,6 +417,8 @@ def admin_alterar_status(id):
     candidato = Candidato.query.get_or_404(id)
     novo_status = request.form.get('status')
     status_anterior = candidato.status
+    notificacao = request.form.get('notificacao', '')  # 'email', 'whatsapp', 'ambos', ''
+    mensagem_extra = request.form.get('mensagem_extra', '').strip()
     
     status_validos = ['pendente', 'em_analise', 'contratar', 'nao_contratar', 'banco_talentos']
     if novo_status not in status_validos:
@@ -466,14 +472,43 @@ def admin_alterar_status(id):
     candidato.status = novo_status
     candidato.data_atualizacao = datetime.now(timezone.utc)
     
+    # Observação principal: mudança de status
+    status_label = novo_status.replace("_", " ").upper()
     obs = Observacao(
         candidato_id=candidato.id,
         usuario_id=current_user.id,
-        texto=f'Alterou o status para: {novo_status.replace("_", " ").upper()}'
+        texto=f'Alterou o status para: {status_label}'
     )
     db.session.add(obs)
+    
+    # Registrar notificações no histórico
+    if notificacao in ('email', 'ambos') and novo_status in ('contratar', 'nao_contratar'):
+        if candidato.email:
+            enviar_email_candidato(
+                app, candidato.email, candidato.nome_completo,
+                candidato.cargo_pretendido, candidato.loja_proxima,
+                novo_status, mensagem_extra
+            )
+            obs_email = Observacao(
+                candidato_id=candidato.id,
+                usuario_id=current_user.id,
+                texto=f'[E-MAIL] Enviou e-mail de {"contratação" if novo_status == "contratar" else "não contratação"} para: {candidato.email}'
+            )
+            db.session.add(obs_email)
+            flash(f'E-mail de notificação enviado para {candidato.email}!', 'success')
+        else:
+            flash('Candidato não possui e-mail cadastrado. E-mail não enviado.', 'warning')
+    
+    if notificacao in ('whatsapp', 'ambos') and novo_status in ('contratar', 'nao_contratar'):
+        obs_wpp = Observacao(
+            candidato_id=candidato.id,
+            usuario_id=current_user.id,
+            texto=f'[WHATSAPP] Abriu WhatsApp para enviar mensagem de {"contratação" if novo_status == "contratar" else "não contratação"} para: {candidato.celular}'
+        )
+        db.session.add(obs_wpp)
+    
     db.session.commit()
-    flash(f'Status atualizado para: {novo_status.replace("_", " ").upper()}', 'success')
+    flash(f'Status atualizado para: {status_label}', 'success')
     return redirect(url_for('admin_candidato_detalhe', id=id))
 
 @app.route('/admin/candidato/<int:id>/observacao', methods=['POST'])
@@ -619,15 +654,40 @@ def admin_usuarios():
                 user_alvo.ativo = not user_alvo.ativo
                 db.session.commit()
                 flash(f'Status de {user_alvo.username} alterado para {"Ativo" if user_alvo.ativo else "Inativo"}.', 'info')
+            return redirect(url_for('admin_usuarios'))
                 
         elif action == 'alterar_senha':
             uid = request.form.get('user_id')
-            nova_senha = request.form.get('nova_senha')
+            nova_senha = request.form.get('nova_senha', '').strip()
             user_alvo = db.session.get(User, int(uid)) if uid else None
-            if user_alvo and nova_senha:
+            if not user_alvo:
+                flash('Usuário não encontrado.', 'danger')
+            elif not nova_senha:
+                flash('A nova senha não pode ser vazia.', 'warning')
+            elif len(nova_senha) < 6:
+                flash('A nova senha deve ter no mínimo 6 caracteres.', 'warning')
+            else:
                 user_alvo.set_password(nova_senha)
                 db.session.commit()
-                flash(f'Senha do usuário {user_alvo.username} atualizada.', 'success')
+                flash(f'Senha do usuário "{user_alvo.username}" redefinida com sucesso!', 'success')
+            return redirect(url_for('admin_usuarios'))
+
+        elif action == 'excluir':
+            uid = request.form.get('user_id')
+            user_alvo = db.session.get(User, int(uid)) if uid else None
+            if not user_alvo:
+                flash('Usuário não encontrado.', 'danger')
+            elif user_alvo.id == current_user.id:
+                flash('Você não pode excluir o seu próprio usuário.', 'warning')
+            elif user_alvo.username.lower() == 'admin':
+                flash('O usuário administrador principal não pode ser excluído.', 'warning')
+            else:
+                nome_u = user_alvo.username
+                Observacao.query.filter_by(usuario_id=user_alvo.id).delete()
+                db.session.delete(user_alvo)
+                db.session.commit()
+                flash(f'Usuário "{nome_u}" excluído com sucesso.', 'success')
+            return redirect(url_for('admin_usuarios'))
 
     # Filtros de busca de usuários
     q = request.args.get('q', '').strip()

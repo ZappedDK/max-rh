@@ -48,6 +48,21 @@ def gerar_qrcode_svg_data(url):
     """Gera um QR Code em SVG e retorna string/data-uri para visualização no navegador"""
     qr = segno.make_qr(url)
     return qr.svg_data_uri(scale=5)
-
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+
+def formatar_nome_proprio(texto):
+    """Formata nomes próprios preservando preposições em minúsculas (ex: Maria da Silva, Goiânia)"""
+    if not texto:
+        return ''
+    palavras = str(texto).strip().split()
+    preposicoes = {'de', 'da', 'do', 'dos', 'das', 'e'}
+    formatadas = []
+    for i, p in enumerate(palavras):
+        p_lower = p.lower()
+        if i > 0 and p_lower in preposicoes:
+            formatadas.append(p_lower)
+        else:
+            formatadas.append(p_lower.capitalize())
+    return ' '.join(formatadas)
